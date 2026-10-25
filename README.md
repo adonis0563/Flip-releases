@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Platform-Android%20%7C%20Windows-black?style=for-the-badge&logo=windows&logoColor=white" alt="Platforms" />
   <img src="https://img.shields.io/badge/Version-v1.0.0-black?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/Cloud%20Upload-Zero%20(100%25%20Local)-success?style=for-the-badge" alt="Zero Cloud" />
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/License-Proprietary%20Freeware-blue?style=for-the-badge" alt="License" />
 </p>
 
 **Flip** is a high-speed, direct peer-to-peer file, folder, and clipboard text sharing application for **Android** and **Windows 10/11**.
@@ -86,4 +86,5 @@ Download the official binaries directly from the [**GitHub Releases**](https://g
 
 ## 📄 License
 
-This distribution is provided under the [MIT License](LICENSE).
+Flip is proprietary software distributed as free-to-use software under the [FLIP PROPRIETARY FREEWARE LICENCE](LICENSE).
+Copyright © 2026 ØFF-LN. All rights reserved.
