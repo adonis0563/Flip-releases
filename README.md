@@ -87,4 +87,4 @@ Download the official binaries directly from the [**GitHub Releases**](https://g
 ## 📄 License
 
 Flip is proprietary software distributed as free-to-use software under the [FLIP PROPRIETARY FREEWARE LICENCE](LICENSE).
-Copyright © 2026 ØFF-LN. All rights reserved.
+Copyright © 2026 Adinoyi Raji. All rights reserved.
