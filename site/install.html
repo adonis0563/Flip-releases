@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Installation Guide — Flip</title>
+  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container nav-bar">
+      <a href="index.html" class="brand">
+        <img src="assets/flip-logo.jpg" alt="Flip Logo" class="brand-logo-img">
+        <span class="brand-title">Flip</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Downloads</a>
+        <a href="install.html" class="nav-link active">Installation Guide</a>
+        <a href="history.html" class="nav-link">Releases & History</a>
+        <a href="https://github.com/adonis0563/flip-releases" target="_blank" rel="noopener" class="nav-btn">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      <h1 class="hero-title" style="text-align: left; font-size: 2.25rem; margin-bottom: 0.75rem;">Installation & Setup Guide</h1>
+      <p style="color: var(--text-muted); margin-bottom: 2.5rem;">
+        Follow these platform instructions to install, verify checksums, and configure network permissions for Flip.
+      </p>
+
+      <!-- Android Installation -->
+      <div class="guide-card">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+          <div class="platform-icon">🤖</div>
+          <h2 style="font-size: 1.5rem;">Android Installation (.apk)</h2>
+        </div>
+
+        <div class="guide-step">
+          <h4>1. Download the APK</h4>
+          <p>Tap <strong>Download Flip.apk</strong> on your Android smartphone or tablet (requires Android 10+ / API 29–36).</p>
+        </div>
+
+        <div class="guide-step">
+          <h4>2. Enable Installation from Unknown Sources</h4>
+          <p>When prompted by your browser (e.g. Chrome), tap <em>Settings</em> and toggle <strong>Allow from this source</strong> to proceed with local sideloading.</p>
+        </div>
+
+        <div class="guide-step">
+          <h4>3. Google Play Protect Prompt</h4>
+          <p>Because Flip is distributed directly without Google Play Store tracking, Play Protect may prompt with <em>"Unrecognized app"</em>. Tap <strong>More details</strong> → <strong>Install anyway</strong>.</p>
+        </div>
+
+        <div class="guide-step">
+          <h4>4. Grant Permissions</h4>
+          <p>Upon initial launch, allow <strong>Nearby devices / Bluetooth</strong> (for zero-latency BLE discovery) and <strong>Camera</strong> (only required if scanning pairing QR codes).</p>
+        </div>
+      </div>
+
+      <!-- Windows Installation -->
+      <div class="guide-card">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+          <div class="platform-icon">🪟</div>
+          <h2 style="font-size: 1.5rem;">Windows Installation (Setup Wizard or Portable)</h2>
+        </div>
+
+        <div class="guide-step">
+          <h4>1. Choose Setup Edition or Portable Executable</h4>
+          <p>
+            <strong>Flip-Setup-1.0.0.exe:</strong> Installs Flip into your user profile with Start Menu shortcuts and automatic uninstaller.<br>
+            <strong>Flip.exe (Portable):</strong> Zero installation required. Simply place it on your desktop, Documents folder, or USB flash drive and run.
+          </p>
+        </div>
+
+        <div class="guide-step">
+          <h4>2. Windows SmartScreen Prompt</h4>
+          <p>
+            If Windows SmartScreen displays <em>"Windows protected your PC"</em> (standard for newly released independent executables), click <strong>More info</strong> and then click <strong>Run anyway</strong>.
+          </p>
+        </div>
+
+        <div class="guide-step">
+          <h4>3. Windows Defender Firewall (Crucial)</h4>
+          <p>
+            When Flip starts, Windows Firewall will prompt to allow access for <code>Flip.exe</code>.
+          </p>
+          <div class="alert alert-warning">
+            <strong>Important:</strong> Check BOTH <strong>Private networks</strong> (home/office Wi-Fi) AND <strong>Public networks</strong> (mobile hotspots). If both are not checked, Windows Firewall will block direct peer socket connections when using mobile hotspots.
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <h4>4. Pairing with Android</h4>
+          <p>Make sure your PC and phone are on the same Wi-Fi network (or connect your PC to your phone's mobile hotspot). Flip will automatically discover nearby devices via BLE or by pointing your webcam at the phone's QR code.</p>
+        </div>
+      </div>
+
+      <!-- Checksum Verification Guide -->
+      <div class="guide-card">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">🔐 Cryptographic Checksum Verification</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+          Verify the authenticity and integrity of downloaded binaries using built-in PowerShell or terminal tools against the official SHA-256 published in our manifest:
+        </p>
+
+        <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-main);"><strong>Windows (PowerShell):</strong></p>
+        <pre style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto; margin-bottom: 1.25rem;">Get-FileHash -Path .\Flip-Setup-1.0.0.exe -Algorithm SHA256</pre>
+
+        <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-main);"><strong>Linux / macOS / Android Termux:</strong></p>
+        <pre style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">sha256sum Flip.apk</pre>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-content">
+      <div>
+        <strong>Flip Distribution System</strong> • Verified SHA-256 Release Pipeline
+      </div>
+      <div>
+        <a href="index.html" style="margin-right: 1.25rem;">Downloads</a>
+        <a href="history.html" style="margin-right: 1.25rem;">Changelog</a>
+        <a href="https://paystack.shop/pay/7fx0g78vu-" target="_blank" rel="noopener">Tip the Developer</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

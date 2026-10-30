@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://releases.flip.app/schema/release-manifest.schema.json",
+  "title": "FlipReleaseManifest",
+  "description": "Schema definition for Flip Application Release Manifest",
+  "type": "object",
+  "required": ["schemaVersion", "appName", "lastUpdated", "releases"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of this manifest schema"
+    },
+    "appName": {
+      "type": "string",
+      "enum": ["Flip"]
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last manifest modification in ISO 8601"
+    },
+    "releases": {
+      "type": "array",
+      "description": "Chronological or versioned list of all releases",
+      "items": {
+        "$ref": "#/$defs/ReleaseEntry"
+      }
+    }
+  },
+  "$defs": {
+    "ReleaseEntry": {
+      "type": "object",
+      "required": [
+        "id",
+        "platform",
+        "version",
+        "channel",
+        "releaseDate",
+        "filename",
+        "fileSize",
+        "sha256",
+        "releaseNotes",
+        "downloadLocations",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["android", "windows-installer", "windows-portable", "media"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+(\\.\\d+)?(-[a-zA-Z0-9.]+)?$"
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["stable", "prerelease", "archived"]
+        },
+        "releaseDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fileSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "releaseNotes": {
+          "type": "string"
+        },
+        "downloadLocations": {
+          "type": "object",
+          "required": ["primary"],
+          "additionalProperties": false,
+          "properties": {
+            "primary": {
+              "type": "string",
+              "format": "uri"
+            },
+            "fallback": {
+              "type": "string",
+              "format": "uri"
+            },
+            "archive": {
+              "type": "string",
+              "format": "uri"
+            },
+            "archiveFileId": {
+              "type": "string"
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "eligible_for_archival", "archived"]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

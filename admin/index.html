@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Flip Admin: Media and Release Operations</title>
+  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="admin-header">
+    <div class="container header-row">
+      <div style="display: flex; align-items: center; gap: var(--space-8);">
+        <span style="font-weight: 800; font-size: 18px;">Flip</span>
+        <span class="brand-badge">ADMIN</span>
+      </div>
+      <div id="auth-header-actions" style="display: none;">
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Feedback Alerts -->
+    <div id="global-alert-error" class="banner-alert banner-error" role="alert"></div>
+    <div id="global-alert-success" class="banner-alert banner-success" role="status"></div>
+
+    <!-- ========================================== -->
+    <!-- 1. AUTHENTICATION LOGIN GATE               -->
+    <!-- ========================================== -->
+    <div id="auth-gate-section" class="auth-wrapper">
+      <div class="auth-card">
+        <h1 class="auth-title">Owner Authentication</h1>
+        <p class="auth-desc">Private administration console. Unauthenticated requests are restricted.</p>
+
+        <form id="owner-login-form" onsubmit="handleLogin(event)">
+          <div class="security-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Secured Administrator Portal</span>
+          </div>
+
+          <div class="form-group">
+            <label for="login-email" class="form-label">Administrator Email</label>
+            <input type="email" id="login-email" class="form-input" placeholder="rajiadinoyi0@gmail.com" value="rajiadinoyi0@gmail.com" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
+              <label for="login-pass" class="form-label" style="margin-bottom: 0;">Password</label>
+              <button type="button" class="auth-link" style="font-size: 13px;" onclick="showForgotPasswordView()">Forgot password?</button>
+            </div>
+            <input type="password" id="login-pass" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+
+          <button type="submit" id="login-btn" class="btn btn-primary btn-block">Authenticate Session</button>
+        </form>
+
+        <!-- Forgot Password Workflow Form -->
+        <form id="forgot-password-form" style="display: none;" onsubmit="handleForgotPassword(event)">
+          <div class="security-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>Password Recovery</span>
+          </div>
+
+          <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
+            Enter your admin email to receive a secure password reset link or recovery code.
+          </p>
+
+          <div class="form-group">
+            <label for="forgot-email" class="form-label">Administrator Email</label>
+            <input type="email" id="forgot-email" class="form-input" placeholder="rajiadinoyi0@gmail.com" value="rajiadinoyi0@gmail.com" required autocomplete="email">
+          </div>
+
+          <button type="submit" id="forgot-btn" class="btn btn-primary btn-block">Send Reset Link</button>
+
+          <div class="auth-links" style="justify-content: center;">
+            <button type="button" class="auth-link" onclick="showLoginView()">← Return to Login</button>
+          </div>
+        </form>
+
+        <!-- Update / Reset Password Form (Triggered via Reset Callback) -->
+        <form id="reset-password-form" style="display: none;" onsubmit="handleUpdatePassword(event)">
+          <div class="security-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Set New Password</span>
+          </div>
+
+          <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
+            Enter a new, strong password for your administrator account.
+          </p>
+
+          <div class="form-group">
+            <label for="new-pass" class="form-label">New Password</label>
+            <input type="password" id="new-pass" class="form-input" placeholder="Minimum 8 characters" minlength="8" required autocomplete="new-password">
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-pass" class="form-label">Confirm New Password</label>
+            <input type="password" id="confirm-pass" class="form-input" placeholder="Re-type new password" minlength="8" required autocomplete="new-password">
+          </div>
+
+          <button type="submit" id="reset-btn" class="btn btn-primary btn-block">Update Password & Login</button>
+
+          <div class="auth-links" style="justify-content: center;">
+            <button type="button" class="auth-link" onclick="showLoginView()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. ADMIN OPERATIONAL DASHBOARD             -->
+    <!-- ========================================== -->
+    <div id="admin-dashboard-section" class="admin-panel" style="display: none;">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Operations Hub</h1>
+          <p style="font-size: 14px; color: var(--color-text-secondary);">Changes update the public website immediately.</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs-bar" role="tablist">
+        <button class="tab-btn active" onclick="switchTab('tab-upload')" role="tab">Upload Item</button>
+        <button class="tab-btn" onclick="switchTab('tab-items')" role="tab">Published Items (<span id="count-items">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('tab-releases')" role="tab">Releases</button>
+        <button class="tab-btn" onclick="switchTab('tab-settings')" role="tab">Backend Settings</button>
+      </div>
+
+      <!-- TAB 1: UPLOAD MEDIA / FILE -->
+      <section id="tab-upload" class="tab-content">
+        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-16); margin-bottom: var(--space-24);">
+          <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--space-16);">Upload New Media or Walkthrough</h2>
+
+          <!-- Mobile-ready file & camera picker -->
+          <div class="upload-dropzone" onclick="document.getElementById('file-picker-input').click()">
+            <input type="file" id="file-picker-input" style="display: none;" accept="image/*,video/*,.apk,.exe" onchange="handleFileChosen(this.files[0])">
+            <p class="dropzone-label">Tap to select photo, video, or file</p>
+            <p class="dropzone-sub">Images are compressed client-side before storage.</p>
+          </div>
+
+          <!-- Progress Bar -->
+          <div id="upload-progress-wrap" class="progress-container">
+            <div class="progress-header">
+              <span id="progress-file-label">Uploading...</span>
+              <span id="progress-percent" style="font-family: var(--font-mono); font-weight: 600;">0%</span>
+            </div>
+            <div class="progress-track">
+              <div id="progress-bar-fill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <form id="item-metadata-form" onsubmit="handleItemSave(event)">
+            <input type="hidden" id="item-id">
+            <input type="hidden" id="item-url">
+            <input type="hidden" id="item-file-size" value="0">
+            <input type="hidden" id="item-file-type" value="image">
+
+            <div class="form-group">
+              <label for="item-title" class="form-label">Item Title</label>
+              <input type="text" id="item-title" class="form-input" placeholder="e.g. Dynamic QR Pairing Walkthrough" required>
+            </div>
+
+            <div class="form-group">
+              <label for="item-desc" class="form-label">Description</label>
+              <textarea id="item-desc" class="form-textarea" placeholder="Explain the feature or release notes..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="item-category" class="form-label">Category</label>
+              <select id="item-category" class="form-select">
+                <option value="tutorials">Guides & Tutorials</option>
+                <option value="screenshots">Interface Screenshots</option>
+                <option value="releases">Release Binary</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: var(--space-8); min-height: var(--min-touch-size);">
+              <input type="checkbox" id="item-published" checked style="width: 20px; height: 20px;">
+              <label for="item-published" style="font-size: 15px; font-weight: 600; cursor: pointer;">
+                Publish immediately to public website
+              </label>
+            </div>
+
+            <button type="submit" id="save-item-btn" class="btn btn-primary btn-block">Save and Publish Item</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 2: MANAGE & REORDER ITEMS -->
+      <section id="tab-items" class="tab-content" style="display: none;">
+        <div style="margin-bottom: var(--space-16); display: flex; justify-content: space-between; align-items: center;">
+          <p style="font-size: 14px; color: var(--color-text-secondary);">Reorder items or toggle public draft visibility.</p>
+        </div>
+        <div id="items-list-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 3: RELEASES MANAGEMENT -->
+      <section id="tab-releases" class="tab-content" style="display: none;">
+        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-16);">
+          <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--space-16);">Active Application Binaries</h2>
+          <div id="releases-admin-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: BACKEND CONFIGURATION (SUPABASE) -->
+      <section id="tab-settings" class="tab-content" style="display: none;">
+        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-16);">
+          <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--space-8);">Shared Backend Provider</h2>
+          <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-24);">
+            Flip operates with instant persistent storage out of the box. You can also connect a live Supabase project to sync database, auth, and storage.
+          </p>
+
+          <form id="supabase-config-form" onsubmit="handleSaveBackendConfig(event)">
+            <div class="form-group">
+              <label for="cfg-supabase-url" class="form-label">Supabase Project URL</label>
+              <input type="url" id="cfg-supabase-url" class="form-input" placeholder="https://xyzcompany.supabase.co">
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-supabase-key" class="form-label">Supabase Anon Key</label>
+              <input type="password" id="cfg-supabase-key" class="form-input" placeholder="eyJh...">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Save Backend Settings</button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Scripts: Supabase CDN + Shared Backend + Admin Logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

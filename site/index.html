@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Flip: Offline Peer-to-Peer File Sharing for Android and Windows</title>
+  <meta name="description" content="Direct device-to-device file and folder transfers over local Wi-Fi without internet access, user accounts, or cloud storage.">
+  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="container header-row">
+      <a href="index.html" class="brand-link" aria-label="Flip Home">
+        <span class="brand-mark">→</span>
+        <span class="brand-name">Flip</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary Navigation">
+        <a href="#downloads" class="nav-link active">Downloads</a>
+        <a href="#tutorials" class="nav-link">Guides</a>
+        <a href="#specifications" class="nav-link">Specs</a>
+        <a href="install.html" class="nav-link">Install</a>
+        <a href="history.html" class="nav-link">Releases</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <h1 class="hero-heading">Offline file sharing between phones and computers.</h1>
+        <p class="hero-copy">
+          Flip transfers files, folders, and clipboard text directly across your local network. Transfers move at full local Wi-Fi speeds without cloud servers, user accounts, or internet connections.
+        </p>
+        <div class="button-stack">
+          <a href="#downloads" class="btn btn-primary">Download Current Releases</a>
+          <a href="#specifications" class="btn btn-secondary">Technical Specifications</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Downloads Section (Reads Live from Shared Backend) -->
+    <section id="downloads" class="container" style="padding-top: var(--space-32);">
+      <div class="section-header">
+        <h2 class="section-title">Verified Application Downloads</h2>
+        <p class="section-subtitle">Cryptographically verified binaries hosted on Cloudflare R2 edge storage.</p>
+      </div>
+
+      <div id="release-cards-container" class="release-grid">
+        <!-- Rendered dynamically by app.js from FlipBackend.getReleases({ publicOnly: true }) -->
+      </div>
+    </section>
+
+    <!-- Tutorials & Walkthroughs (Reads Live from Shared Backend) -->
+    <section id="tutorials" class="container" style="padding-top: var(--space-32);">
+      <div class="section-header">
+        <h2 class="section-title">Guides and Media</h2>
+        <p class="section-subtitle">Published screenshots, feature overviews, and pairing walkthroughs.</p>
+      </div>
+
+      <div id="media-showcase-container" class="media-grid">
+        <!-- Rendered dynamically by app.js from FlipBackend.getMediaItems({ publicOnly: true }) -->
+      </div>
+    </section>
+
+    <!-- Technical Fact Sheet (Replaces generic 3-box feature cards) -->
+    <section id="specifications" class="container" style="padding-top: var(--space-32); margin-bottom: var(--space-48);">
+      <div class="section-header">
+        <h2 class="section-title">Technical Architecture</h2>
+        <p class="section-subtitle">Core protocol rules and network operational parameters.</p>
+      </div>
+
+      <div class="specs-table-wrap">
+        <div class="specs-grid">
+          <div class="spec-fact-item">
+            <h3 class="fact-title">Local Socket Streaming</h3>
+            <p class="fact-body">Streams data directly to disk in 64 KB memory chunks. Eliminates memory buffering bottlenecks on files of any size.</p>
+          </div>
+          <div class="spec-fact-item">
+            <h3 class="fact-title">Proximity Pairing</h3>
+            <p class="fact-body">Discovers nearby devices using Bluetooth Low Energy (0xFD01 and 0xFD02 service IDs) or dynamic camera QR code scanning.</p>
+          </div>
+          <div class="spec-fact-item">
+            <h3 class="fact-title">Batch Transfer Approvals</h3>
+            <p class="fact-body">Prompts the receiver once for an entire folder or multi-file queue rather than interrupting for each individual file.</p>
+          </div>
+          <div class="spec-fact-item">
+            <h3 class="fact-title">Transfer Resumption</h3>
+            <p class="fact-body">Saves verified byte offsets on disk. If Wi-Fi disconnects, the receiver streams only remaining missing bytes without duplicate files.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Bottom Navigation (Strict 44px+ touch targets for one-handed thumb use) -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="#downloads" class="mobile-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span>Downloads</span>
+    </a>
+    <a href="#tutorials" class="mobile-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span>Guides</span>
+    </a>
+    <a href="#specifications" class="mobile-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span>Specs</span>
+    </a>
+    <a href="install.html" class="mobile-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      <span>Install</span>
+    </a>
+  </nav>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-message" class="toast-notice" role="status" aria-live="polite"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <p>Flip Distribution Network. Verified SHA-256 release pipeline.</p>
+      <p>Copyright 2026 Adinoyi Raji. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts: Supabase CDN + Shared Backend + Client App -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

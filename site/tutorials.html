@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorials & Screenshots — Flip</title>
+  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .gallery-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .gallery-thumb {
+      height: 220px;
+      background: var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .gallery-thumb img, .gallery-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-info {
+      padding: 1.25rem;
+    }
+    .gallery-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.35rem;
+    }
+    .gallery-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .empty-state {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 4rem 2rem;
+      text-align: center;
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container nav-bar">
+      <a href="index.html" class="brand">
+        <img src="assets/flip-logo.jpg" alt="Flip Logo" class="brand-logo-img">
+        <span class="brand-title">Flip</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Downloads</a>
+        <a href="tutorials.html" class="nav-link active">Tutorials & Media</a>
+        <a href="install.html" class="nav-link">Installation Guide</a>
+        <a href="history.html" class="nav-link">Releases</a>
+        <a href="https://github.com/adonis0563/flip-releases" target="_blank" rel="noopener" class="nav-btn">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      <h1 class="hero-title" style="text-align: center; font-size: 2.5rem; margin-bottom: 0.75rem;">Tutorials & Walkthroughs</h1>
+      <p style="color: var(--text-muted); text-align: center; max-width: 600px; margin: 0 auto 2.5rem;">
+        Official guides, feature walkthroughs, and screenshots for Flip.
+      </p>
+
+      <div id="media-content-container">
+        <!-- Loaded dynamically from assets/media.json -->
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-content">
+      <div>
+        <strong>Flip Distribution System</strong> • Verified Media Center
+      </div>
+      <div>
+        <a href="index.html" style="margin-right: 1.25rem;">Downloads</a>
+        <a href="install.html" style="margin-right: 1.25rem;">Installation Guide</a>
+        <a href="https://paystack.shop/pay/7fx0g78vu-" target="_blank" rel="noopener">Tip the Developer</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    async function loadPublicMedia() {
+      const container = document.getElementById('media-content-container');
+      try {
+        const res = await fetch('assets/media.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const media = data.media || [];
+
+        if (media.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
+              <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem;">No Tutorial Videos Published Yet</h2>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Official video guides and screenshots will be published here soon. In the meantime, you can download Flip and follow our step-by-step setup guide.
+              </p>
+              <div style="display: flex; justify-content: center; gap: 1rem;">
+                <a href="index.html" class="btn-primary" style="padding: 0.6rem 1.25rem;">Get Flip Now</a>
+                <a href="install.html" class="btn-secondary" style="padding: 0.6rem 1.25rem;">Installation Guide</a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '<div class="gallery-grid">';
+        media.forEach(item => {
+          const isVid = item.type === 'video' || item.url.endsWith('.mp4') || item.url.endsWith('.webm');
+          html += `
+            <div class="gallery-item">
+              <div class="gallery-thumb">
+                ${isVid 
+                  ? `<video src="${item.url}" controls poster="${item.thumbnail || ''}"></video>` 
+                  : `<img src="${item.url}" alt="${item.title}">`}
+              </div>
+              <div class="gallery-info">
+                <span class="badge ${isVid ? 'badge-prerelease' : 'badge-stable'}" style="margin-bottom: 0.5rem;">${item.category}</span>
+                <h3>${item.title}</h3>
+                <p>${item.description || ''}</p>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch {
+        container.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 3rem;">Unable to load media catalog.</p>';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadPublicMedia);
+  </script>
+</body>
+</html>

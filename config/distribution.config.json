@@ -1,0 +1,30 @@
+{
+  "retention": {
+    "description": "Retention policy for Cloudflare R2 active releases",
+    "maxStableReleasesPerPlatform": 2,
+    "maxPrereleasesPerPlatform": 2,
+    "totalR2SizeCapBytes": 10737418240,
+    "policyNotes": "When Google Drive is disabled, releases exceeding maxStableReleasesPerPlatform or size caps are labeled 'eligible_for_archival' and REMAIN in R2 with zero deletions."
+  },
+  "cloudflareR2": {
+    "bucketName": "flip-releases",
+    "publicBaseUrl": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev",
+    "customDomain": "https://releases.flip.app",
+    "prefix": "binaries/"
+  },
+  "googleDrive": {
+    "enabled": false,
+    "dryRun": true,
+    "archiveFolderId": "",
+    "requiredScope": "https://www.googleapis.com/auth/drive.file",
+    "confirmDeletionFlagRequired": true,
+    "serviceAccountQuotasNotice": "Google Drive Service Accounts do not have independent default drive storage. The target folder MUST be created in a user/workspace Drive and shared with the Service Account email as 'Editor'."
+  },
+  "site": {
+    "title": "Flip — Direct Peer-to-Peer Offline Sharing",
+    "tagline": "High-speed local transfers with zero cloud, zero accounts, and zero internet.",
+    "supportEmail": "flipdevelopmentsupport@gmail.com",
+    "githubRepo": "https://github.com/adonis0563/flip-releases",
+    "tipJarUrl": "https://paystack.shop/pay/7fx0g78vu-"
+  }
+}

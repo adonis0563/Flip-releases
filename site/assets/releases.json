@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0.0",
+  "appName": "Flip",
+  "lastUpdated": "2026-10-27T05:25:00.000Z",
+  "releases": [
+    {
+      "id": "flip-android-1.0.0",
+      "platform": "android",
+      "version": "1.0.0",
+      "channel": "stable",
+      "releaseDate": "2026-10-25T12:38:00.000Z",
+      "filename": "Flip.apk",
+      "fileSize": 81266314,
+      "sha256": "048520afaab0b6ab3005067a07a577bc8ddf862c83ec5a37e47c5a3545fabc57",
+      "releaseNotes": "Initial official release for Android (API 29-36). Features Bluetooth Low Energy discovery, dynamic QR code pairing, high-speed Wi-Fi Direct socket transfers, folder streaming with resume support, and shared clipboard.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.0/Flip.apk",
+        "fallback": "https://github.com/adonis0563/flip-releases/releases/download/v1.0.0/Flip.apk"
+      },
+      "status": "active",
+      "metadata": {
+        "minSdk": 29,
+        "targetSdk": 36,
+        "architecture": "universal"
+      }
+    },
+    {
+      "id": "flip-windows-installer-1.0.0",
+      "platform": "windows-installer",
+      "version": "1.0.0",
+      "channel": "stable",
+      "releaseDate": "2026-10-25T11:06:00.000Z",
+      "filename": "Flip-Setup-1.0.0.exe",
+      "fileSize": 72529920,
+      "sha256": "f765a29999e5820f4f4f8b31d5ead059ba37fd7a03dddaa0eda31403b7f0542c",
+      "releaseNotes": "Initial official Windows installer release (.NET 8 WPF, 64-bit self-contained). Includes start menu shortcuts, automatic firewall rules helper, desktop tray integration, dynamic QR pairing scanner via webcam, and batch receive approval.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.0/Flip-Setup-1.0.0.exe",
+        "fallback": "https://github.com/adonis0563/flip-releases/releases/download/v1.0.0/Flip-Setup-1.0.0.exe"
+      },
+      "status": "active",
+      "metadata": {
+        "os": "Windows 10 / 11",
+        "architecture": "x64",
+        "installerType": "setup-wizard"
+      }
+    },
+    {
+      "id": "flip-windows-portable-1.0.0",
+      "platform": "windows-portable",
+      "version": "1.0.0",
+      "channel": "stable",
+      "releaseDate": "2026-10-25T11:05:00.000Z",
+      "filename": "Flip.exe",
+      "fileSize": 78359600,
+      "sha256": "7fb5c9041c794583c9bd4e0d085462409e06a0f53ab17fecade667c7c6a84926",
+      "releaseNotes": "Standalone portable executable for Windows 10/11 x64. No installation needed; run immediately from any folder or USB drive. Full parity with installer edition.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.0/Flip.exe",
+        "fallback": "https://github.com/adonis0563/flip-releases/releases/download/v1.0.0/Flip.exe"
+      },
+      "status": "active",
+      "metadata": {
+        "os": "Windows 10 / 11",
+        "architecture": "x64",
+        "portable": true
+      }
+    },
+    {
+      "id": "flip-media-promo-1.0.0",
+      "platform": "media",
+      "version": "1.0.0",
+      "channel": "stable",
+      "releaseDate": "2026-10-25T11:52:00.000Z",
+      "filename": "Flip-Promo-Ad.mp4",
+      "fileSize": 15484725,
+      "sha256": "dd32af79c290df7eb4bccc6a2f0cfa41ed5ce86bca59208b3597362af19e60b1",
+      "releaseNotes": "Official 1080p Flip product launch promo ad with audio soundtrack.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.0/Flip-Promo-Ad.mp4",
+        "fallback": "https://github.com/adonis0563/flip-releases/releases/download/v1.0.0/Flip-Promo-Ad.mp4"
+      },
+      "status": "active",
+      "metadata": {
+        "format": "mp4",
+        "resolution": "1080p",
+        "type": "video"
+      }
+    }
+  ]
+}

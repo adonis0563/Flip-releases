@@ -1,0 +1,19 @@
+{
+  "name": "flip-distribution-system",
+  "version": "1.0.0",
+  "description": "Release management, Cloudflare Pages website, and safe retention rotation for Flip",
+  "main": "scripts/manifest-manager.js",
+  "scripts": {
+    "test": "node tests/test-suite.js",
+    "validate": "node scripts/manifest-manager.js --validate",
+    "retention:check": "node scripts/manifest-manager.js --dry-run",
+    "retention:apply": "node scripts/manifest-manager.js --apply-retention",
+    "archive:dry-run": "node scripts/drive-archival.js",
+    "archive:live": "node scripts/drive-archival.js --live",
+    "publish:dry-run": "node scripts/r2-publisher.js --dry-run",
+    "preview": "node scripts/preview-server.js"
+  },
+  "keywords": ["flip", "release-management", "cloudflare-pages", "r2", "offline-sharing"],
+  "author": "Adinoyi Raji",
+  "license": "SEE LICENSE IN LICENSE"
+}

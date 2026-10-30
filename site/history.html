@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Release History & Archives — Flip</title>
+  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-select {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .retention-notice {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .retention-notice strong {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container nav-bar">
+      <a href="index.html" class="brand">
+        <img src="assets/flip-logo.jpg" alt="Flip Logo" class="brand-logo-img">
+        <span class="brand-title">Flip</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Downloads</a>
+        <a href="install.html" class="nav-link">Installation Guide</a>
+        <a href="history.html" class="nav-link active">Releases & History</a>
+        <a href="https://github.com/adonis0563/flip-releases" target="_blank" rel="noopener" class="nav-btn">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      <h1 class="hero-title" style="text-align: left; font-size: 2.25rem; margin-bottom: 0.75rem;">Release History & Archives</h1>
+      <p style="color: var(--text-muted); margin-bottom: 1.75rem;">
+        Complete catalog of every public release of Flip. Releases are cryptographically hashed and never deleted solely because a newer version exists.
+      </p>
+
+      <div class="retention-notice">
+        <strong>Archive & Retention Policy:</strong> The latest two stable releases per platform are maintained with high availability on Cloudflare R2. Historical releases exceeding retention limits are flagged as <em>Eligible for Archival</em> or archived to Google Drive, ensuring permanent verifiable access without silent removals.
+      </div>
+
+      <div class="filter-bar">
+        <label for="filter-platform" style="font-size: 0.85rem; color: var(--text-dim);">Platform:</label>
+        <select id="filter-platform" class="filter-select">
+          <option value="all">All Platforms</option>
+          <option value="android">Android</option>
+          <option value="windows-installer">Windows (Installer)</option>
+          <option value="windows-portable">Windows (Portable)</option>
+          <option value="media">Promo / Media</option>
+        </select>
+
+        <label for="filter-channel" style="font-size: 0.85rem; color: var(--text-dim); margin-left: 0.5rem;">Channel / Status:</label>
+        <select id="filter-channel" class="filter-select">
+          <option value="all">All Channels</option>
+          <option value="stable">Stable</option>
+          <option value="prerelease">Prerelease</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Platform</th>
+              <th>Status</th>
+              <th>Release Date</th>
+              <th>Size</th>
+              <th>SHA-256 Checksum</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Dynamic rows loaded from manifest -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Download Fallback Modal -->
+  <div id="fallback-modal" class="modal-backdrop">
+    <div class="modal">
+      <h3 class="modal-title">Release Mirrors & Checksum</h3>
+      <p id="modal-release-name" style="font-weight: 600; margin-bottom: 0.5rem;"></p>
+      <p class="modal-body">
+        If the primary Cloudflare download is inaccessible, use the global GitHub release mirror or access the verified historical Drive archive.
+      </p>
+      <div class="modal-actions">
+        <button class="copy-btn" onclick="closeDownloadFallbackModal()">Cancel</button>
+        <a id="modal-fallback-btn" class="btn-primary" style="padding: 0.5rem 1rem;" target="_blank">GitHub Mirror</a>
+        <a id="modal-archive-btn" class="btn-primary" style="padding: 0.5rem 1rem; display: none;" target="_blank">Drive Archive</a>
+        <a id="modal-primary-btn" class="btn-primary" style="padding: 0.5rem 1rem; background-color: var(--accent-white); color: #000;">Download Primary</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container footer-content">
+      <div>
+        <strong>Flip Distribution System</strong> • Immutable Historical Archives
+      </div>
+      <div>
+        <a href="index.html" style="margin-right: 1.25rem;">Latest Downloads</a>
+        <a href="install.html" style="margin-right: 1.25rem;">Installation Guide</a>
+        <a href="https://paystack.shop/pay/7fx0g78vu-" target="_blank" rel="noopener">Tip the Developer</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
