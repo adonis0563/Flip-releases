@@ -119,7 +119,9 @@
           email: normalizedEmail,
           password: password
         });
-        if (error) throw error;
+        if (error) {
+          throw new Error('incorrect credentials');
+        }
         localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
           authenticated: true,
           role: 'owner',
@@ -132,7 +134,7 @@
 
       // 2. Strict Administrator Email Gate (enforcing owner identity)
       if (normalizedEmail !== adminEmail && normalizedEmail !== 'admin@flip.app') {
-        throw new Error('Access denied. Administrator email not recognized.');
+        throw new Error('incorrect credentials');
       }
 
       // 3. Cryptographic Verification for local storage mode
@@ -161,7 +163,7 @@
         return { email: normalizedEmail, role: 'owner' };
       }
 
-      throw new Error('Incorrect password or credentials. Access denied.');
+      throw new Error('incorrect credentials');
     }
 
     /**

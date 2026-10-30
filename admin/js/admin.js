@@ -89,7 +89,7 @@
       showAlert('Session authenticated successfully.', 'success');
       checkSession();
     } catch (err) {
-      showAlert(err.message || 'Login failed.');
+      showAlert('incorrect credentials');
     } finally {
       btn.disabled = false;
       btn.textContent = 'Authenticate Session';

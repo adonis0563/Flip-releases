@@ -26,6 +26,21 @@ Download the official binaries directly from the [**GitHub Releases**](https://g
 
 ---
 
+## 🔐 Official Android Signing Certificate Fingerprint
+
+Independent of download mirrors and domain lookalikes, verify the authenticity of any downloaded `Flip.apk` against this official signing fingerprint:
+
+```bash
+# Verify using official Android SDK apksigner
+apksigner verify --print-certs Flip.apk
+```
+
+- **SHA-256 Digest**: `d2d35128a8a2fed0eaa9d3f8b4e18614700565671152ce095d24cbcb7246b15b`
+- **SHA-1 Digest**: `a4dfdb1c9aa7fc2969bc992c88eea92f8b0e5798`
+- **Issuer / Subject**: `C=US, O=Android, CN=Android Debug`
+
+---
+
 ## ✨ Features at a Glance
 
 - **Seamless Cross-Platform Sharing**: Direct bidirectional transfers between Android phones and Windows PCs, Android-to-Android, and Windows-to-Windows.
