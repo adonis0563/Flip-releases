@@ -1,8 +1,68 @@
 {
   "schemaVersion": "1.0.0",
   "appName": "Flip",
-  "lastUpdated": "2026-10-27T05:25:00.000Z",
+  "lastUpdated": "2026-10-31T18:05:36.357Z",
   "releases": [
+    {
+      "id": "flip-windows-portable-1.0.1",
+      "platform": "windows-portable",
+      "version": "1.0.1",
+      "channel": "stable",
+      "releaseDate": "2026-10-31T18:05:36.369Z",
+      "filename": "Flip.exe",
+      "fileSize": 78481651,
+      "sha256": "f9aec56ceafedd60301ebc81d9f6d6209b134dbf0a70b4e96a25ec2f09e69b24",
+      "releaseNotes": "Flip v1.0.1: Portable standalone executable. Instant disconnect without freezing, full duplex file & text transfers, no installation needed.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.1/Flip.exe",
+        "fallback": "https://github.com/adonis0563/flip/releases/download/v1.0.1/Flip.exe"
+      },
+      "status": "active",
+      "metadata": {
+        "compatibility": "Windows 10 / 11 (x64)",
+        "architecture": "x64"
+      }
+    },
+    {
+      "id": "flip-windows-installer-1.0.1",
+      "platform": "windows-installer",
+      "version": "1.0.1",
+      "channel": "stable",
+      "releaseDate": "2026-10-31T18:05:36.369Z",
+      "filename": "Flip-Setup-1.0.1.exe",
+      "fileSize": 72649728,
+      "sha256": "5c18394fdf4f4ee6d14234f614663b62998bd7ed0787c7a70c6c538f8702cc57",
+      "releaseNotes": "Flip v1.0.1: Full installer with desktop shortcuts, non-blocking 1.5s disconnect, clean BYE protocol, dynamic QR scanner, and automated firewall rules.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.1/Flip-Setup-1.0.1.exe",
+        "fallback": "https://github.com/adonis0563/flip/releases/download/v1.0.1/Flip-Setup-1.0.1.exe"
+      },
+      "status": "active",
+      "metadata": {
+        "compatibility": "Windows 10 / 11 (64-bit)",
+        "architecture": "x64"
+      }
+    },
+    {
+      "id": "flip-android-1.0.1",
+      "platform": "android",
+      "version": "1.0.1",
+      "channel": "stable",
+      "releaseDate": "2026-10-31T18:05:36.369Z",
+      "filename": "Flip.apk",
+      "fileSize": 83551747,
+      "sha256": "4bb921f01d8b2c07230dbb511eb3660ad64ef4f1f4a3f4ebac79637f43ded24e",
+      "releaseNotes": "Flip v1.0.1: Dynamic PC/Hotspot/Wi-Fi Direct labels, fast connection loss detection, bidirectional BYE protocol, background IP monitoring, storage categorization, and performance polish.",
+      "downloadLocations": {
+        "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.1/Flip.apk",
+        "fallback": "https://github.com/adonis0563/flip/releases/download/v1.0.1/Flip.apk"
+      },
+      "status": "active",
+      "metadata": {
+        "compatibility": "Android 10+ (API 29-36)",
+        "architecture": "x64"
+      }
+    },
     {
       "id": "flip-android-1.0.0",
       "platform": "android",
