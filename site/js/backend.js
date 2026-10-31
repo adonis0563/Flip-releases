@@ -33,7 +33,7 @@
         "fileSize": 83551747,
         "sha256": "4bb921f01d8b2c07230dbb511eb3660ad64ef4f1f4a3f4ebac79637f43ded24e",
         "compatibility": "Android 10+ (API 29-36)",
-        "notes": "Flip v1.0.1: Dynamic PC/Hotspot/Wi-Fi Direct labels, fast connection loss detection, bidirectional BYE protocol, background IP monitoring, storage categorization, and performance polish.",
+        "notes": "Flip: What’s New\n\nFlip Web (new)\n• Send and receive files with any device through a browser. Nothing to install on the other side.\n• Web mode is available from Android only. Just scan the QR code or open the short link.\n\nFiles\n• Documents (PDF, DOCX and more) now show up in Files.\n• Apps are in an A–Z grid, with system apps hidden by default.\n• Sharper thumbnails.\n• Hold to select one file, then tap others to add them.\n• Smoother scrolling with haptic feedback.\n\nStorage and History\n• Storage details now use shades of violet, with black for free space.\n• Cleaner History tabs and better light-mode contrast.\n\nPolish\n• Every bottom sheet and pop-up now blurs the background.\n• Smoother typing on the transfer screen.\n• New Flip logo.\n• Supports Android 10 to 15.",
         "downloadUrl": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.1/Flip.apk",
         "isPublished": true,
         "orderIndex": 0,
@@ -73,8 +73,22 @@
     }
 ];
 
-  // Default clean media items (starts empty per clean-slate specification)
-  const DEFAULT_MEDIA = [];
+  // Default media items with What's New draft for owner to review and publish
+  const DEFAULT_MEDIA = [
+    {
+      "id": "media_whatsnew_v101",
+      "title": "Flip: What’s New (v1.0.1)",
+      "description": "Flip Web (new)\n\n• Send and receive files with any device through a browser. Nothing to install on the other side.\n• Web mode is available from Android only. Just scan the QR code or open the short link.\n\nFiles\n\n• Documents (PDF, DOCX and more) now show up in Files.\n• Apps are in an A–Z grid, with system apps hidden by default.\n• Sharper thumbnails.\n• Hold to select one file, then tap others to add them.\n• Smoother scrolling with haptic feedback.\n\nStorage and History\n\n• Storage details now use shades of violet, with black for free space.\n• Cleaner History tabs and better light-mode contrast.\n\nPolish\n\n• Every bottom sheet and pop-up now blurs the background.\n• Smoother typing on the transfer screen.\n• New Flip logo.\n• Supports Android 10 to 15.",
+      "category": "releases",
+      "url": "assets/flip-logo.jpg",
+      "fileSize": 3142,
+      "type": "image",
+      "isPublished": false,
+      "orderIndex": 0,
+      "createdAt": "2026-10-31T18:50:00.000Z",
+      "updatedAt": "2026-10-31T18:50:00.000Z"
+    }
+  ];
 
   class BackendClient {
     constructor() {
@@ -101,11 +115,39 @@
     }
 
     initStorage() {
-      if (!localStorage.getItem(STORAGE_KEY_RELEASES)) {
+      if (typeof localStorage === 'undefined') return;
+      const storedReleases = localStorage.getItem(STORAGE_KEY_RELEASES);
+      if (!storedReleases) {
         localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(DEFAULT_RELEASES));
+      } else {
+        try {
+          const list = JSON.parse(storedReleases);
+          DEFAULT_RELEASES.forEach(defRel => {
+            const existing = list.find(r => r.id === defRel.id);
+            if (existing) {
+              existing.notes = defRel.notes;
+            } else {
+              list.unshift(defRel);
+            }
+          });
+          localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(list));
+        } catch (_) {}
       }
-      if (!localStorage.getItem(STORAGE_KEY_ITEMS)) {
+
+      const storedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+      if (!storedItems) {
         localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(DEFAULT_MEDIA));
+      } else {
+        try {
+          const items = JSON.parse(storedItems);
+          DEFAULT_MEDIA.forEach(defItem => {
+            const existing = items.find(m => m.id === defItem.id);
+            if (!existing) {
+              items.unshift(defItem);
+            }
+          });
+          localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+        } catch (_) {}
       }
     }
 
@@ -114,7 +156,7 @@
         let cfg = null;
         if (typeof window !== 'undefined' && window.FLIP_ENV && window.FLIP_ENV.supabaseUrl) {
           cfg = window.FLIP_ENV;
-        } else {
+        } else if (typeof localStorage !== 'undefined') {
           const raw = localStorage.getItem(STORAGE_KEY_CONFIG);
           if (raw) {
             cfg = JSON.parse(raw);
@@ -455,6 +497,19 @@
         item.updatedAt = new Date().toISOString();
         localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
         this.broadcastChange('media');
+        return item;
+      }
+      return null;
+    }
+
+    async toggleReleasePublished(id) {
+      const items = await this.getReleases({ publicOnly: false });
+      const item = items.find(r => r.id === id);
+      if (item) {
+        item.isPublished = !item.isPublished;
+        item.updatedAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(items));
+        this.broadcastChange('releases');
         return item;
       }
       return null;

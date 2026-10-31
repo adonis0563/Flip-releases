@@ -52,7 +52,7 @@
       "filename": "Flip.apk",
       "fileSize": 83551747,
       "sha256": "4bb921f01d8b2c07230dbb511eb3660ad64ef4f1f4a3f4ebac79637f43ded24e",
-      "releaseNotes": "Flip v1.0.1: Dynamic PC/Hotspot/Wi-Fi Direct labels, fast connection loss detection, bidirectional BYE protocol, background IP monitoring, storage categorization, and performance polish.",
+      "releaseNotes": "Flip: What’s New\n\nFlip Web (new)\n• Send and receive files with any device through a browser. Nothing to install on the other side.\n• Web mode is available from Android only. Just scan the QR code or open the short link.\n\nFiles\n• Documents (PDF, DOCX and more) now show up in Files.\n• Apps are in an A–Z grid, with system apps hidden by default.\n• Sharper thumbnails.\n• Hold to select one file, then tap others to add them.\n• Smoother scrolling with haptic feedback.\n\nStorage and History\n• Storage details now use shades of violet, with black for free space.\n• Cleaner History tabs and better light-mode contrast.\n\nPolish\n• Every bottom sheet and pop-up now blurs the background.\n• Smoother typing on the transfer screen.\n• New Flip logo.\n• Supports Android 10 to 15.",
       "downloadLocations": {
         "primary": "https://pub-6c3c9d95f8fb414aa1fc8e027fb62601.r2.dev/binaries/v1.0.1/Flip.apk",
         "fallback": "https://github.com/adonis0563/flip/releases/download/v1.0.1/Flip.apk"

@@ -405,6 +405,8 @@ a {
 .item-desc-text {
   font-size: 13px;
   color: var(--color-text-secondary);
+  white-space: pre-line;
+  line-height: 1.45;
 }
 
 .status-tag {

@@ -391,6 +391,7 @@ button {
   font-size: 14px;
   color: var(--color-text-secondary);
   line-height: 1.45;
+  white-space: pre-line;
   margin-bottom: var(--space-16);
   flex-grow: 1;
 }
@@ -515,7 +516,8 @@ button {
 .media-desc {
   font-size: 14px;
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
+  white-space: pre-line;
 }
 
 /* Fact Sheet Specs (Replaces icon cards) */

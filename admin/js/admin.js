@@ -472,13 +472,30 @@
             <strong style="font-size: 16px;">${rel.platformName} (v${rel.version})</strong>
             <span style="font-size: 12px; color: var(--color-text-muted); display: block;">${rel.filename} - ${formatBytes(rel.fileSize)}</span>
           </div>
-          <span class="status-tag status-published">Verified in R2</span>
+          <div style="display: flex; gap: var(--space-8); align-items: center;">
+            <span class="status-tag ${rel.isPublished ? 'status-published' : 'status-draft'}">
+              ${rel.isPublished ? 'Published' : 'Draft (Hidden)'}
+            </span>
+            <button class="btn btn-secondary btn-sm" onclick="toggleReleasePublish('${rel.id}')">
+              ${rel.isPublished ? 'Set to Draft' : 'Publish'}
+            </button>
+          </div>
         </div>
-        <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-8);">${rel.notes}</p>
+        <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-8); white-space: pre-line; line-height: 1.45;">${rel.notes}</p>
         <p style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); word-break: break-all;">SHA256: ${rel.sha256}</p>
       </div>
     `).join('');
   }
+
+  window.toggleReleasePublish = async function (id) {
+    try {
+      const updated = await window.FlipBackend.toggleReleasePublished(id);
+      showAlert(`Release status updated to ${updated.isPublished ? 'Published' : 'Draft'}.`, 'success');
+      renderAdminReleases();
+    } catch (err) {
+      showAlert(err.message);
+    }
+  };
 
   // ========================================================
   // 7. BACKEND CONFIGURATION
