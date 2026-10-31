@@ -309,6 +309,72 @@ itAsync('should simulate archival without deleting R2 objects in dry-run mode', 
 });
 
 // ------------------------------------------------------------------
+// Test Group 5: Admin Auth, Recovery Link & Password Manager Compliance
+// ------------------------------------------------------------------
+console.log('\nSuite 5: Admin Login, Link Recovery & Password Manager Attributes');
+
+it('should include Google Password Manager attributes, password visibility toggles, and link-based reset form in admin/index.html', () => {
+  const html = fs.readFileSync(path.resolve(__dirname, '../admin/index.html'), 'utf8');
+  assert.ok(!html.includes('id="otp-code"'), '6-digit OTP input should be removed');
+  assert.ok(html.includes('id="login-email" name="username"') && html.includes('autocomplete="username"'), 'Login email must have name=username and autocomplete=username');
+  assert.ok(html.includes('id="login-pass" name="password"') && html.includes('autocomplete="current-password"'), 'Login password must have name=password and autocomplete=current-password');
+  assert.ok(html.includes('id="new-pass" name="new-password"') && html.includes('autocomplete="new-password"'), 'New password must have name=new-password and autocomplete=new-password');
+  assert.ok(html.includes("togglePasswordVisibility('login-pass'"), 'Login password must have visibility toggle button');
+  assert.ok(html.includes("togglePasswordVisibility('new-pass'"), 'New password must have visibility toggle button');
+  assert.ok(html.includes("togglePasswordVisibility('confirm-pass'"), 'Confirm password must have visibility toggle button');
+  assert.ok(html.includes('handleUpdatePassword(event)'), 'Reset form must call handleUpdatePassword(event)');
+});
+
+itAsync('should enforce generic "incorrect credentials" message, detect recovery link hash, and update password via link flow', async () => {
+  const cryptoModule = require('crypto');
+  const store = {};
+  global.localStorage = {
+    getItem: (k) => store[k] || null,
+    setItem: (k, v) => { store[k] = String(v); },
+    removeItem: (k) => { delete store[k]; }
+  };
+  global.crypto = {
+    subtle: {
+      digest: async (algo, data) => {
+        return cryptoModule.createHash('sha256').update(Buffer.from(data)).digest();
+      }
+    }
+  };
+  global.window = {
+    location: {
+      origin: 'https://flip-admin.pages.dev',
+      pathname: '/',
+      hash: '#access_token=mock_token_123&type=recovery',
+      search: ''
+    },
+    dispatchEvent: () => {},
+    addEventListener: () => {}
+  };
+
+  delete require.cache[require.resolve('../admin/js/backend.js')];
+  const backend = require('../admin/js/backend.js');
+
+  assert.strictEqual(backend.isRecoveryRedirect, true, 'Should detect #access_token=...&type=recovery in URL hash');
+
+  await assert.rejects(() => backend.login('wrong@example.com', 'anypass123'), /incorrect credentials/);
+  await assert.rejects(() => backend.requestPasswordReset('wrong@example.com'), /incorrect credentials/);
+
+  const resetRes = await backend.requestPasswordReset('rajiadinoyi0@gmail.com');
+  assert.strictEqual(resetRes.success, true);
+
+  await backend.updatePassword('NewSecurePass2026!');
+  assert.strictEqual(backend.isRecoveryRedirect, false, 'isRecoveryRedirect should be cleared after password update');
+
+  const session = await backend.getSession();
+  assert.ok(session && session.authenticated === true, 'Session should be authenticated after updatePassword');
+
+  await assert.rejects(() => backend.login('rajiadinoyi0@gmail.com', 'WrongPass123!'), /incorrect credentials/);
+
+  const user = await backend.login('rajiadinoyi0@gmail.com', 'NewSecurePass2026!');
+  assert.strictEqual(user.email, 'rajiadinoyi0@gmail.com');
+});
+
+// ------------------------------------------------------------------
 // Test Summary
 // ------------------------------------------------------------------
 setTimeout(() => {

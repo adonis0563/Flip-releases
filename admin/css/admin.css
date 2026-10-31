@@ -499,3 +499,37 @@ a {
   border-radius: var(--border-radius);
   margin-bottom: var(--space-16);
 }
+
+/* Password Visibility Toggle */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap .form-input {
+  padding-right: 48px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.password-toggle-btn:hover,
+.password-toggle-btn:focus-visible {
+  color: var(--color-text-primary);
+}

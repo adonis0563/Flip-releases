@@ -21,3 +21,8 @@ Thumbs.db
 *.mp4
 v1.0.0/
 v1.0.1/
+
+*/js/env-config.js
+env-config.js
+
+.wrangler/

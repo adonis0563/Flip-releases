@@ -33,17 +33,71 @@
   // ========================================================
   // 1. AUTHENTICATION & SESSION GATE
   // ========================================================
+  const EYE_OPEN_SVG = '<svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF_SVG = '<svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  window.togglePasswordVisibility = function (inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (btnEl) {
+      btnEl.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+      btnEl.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      btnEl.setAttribute('title', isHidden ? 'Hide password' : 'Show password');
+      btnEl.innerHTML = isHidden ? EYE_OFF_SVG : EYE_OPEN_SVG;
+    }
+  };
+
+  async function saveCredentialToBrowser(email, password) {
+    try {
+      if (typeof window !== 'undefined' && window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+        const cred = new window.PasswordCredential({
+          id: email,
+          password: password,
+          name: 'Flip Administrator'
+        });
+        await navigator.credentials.store(cred);
+      }
+    } catch (_) {
+      // Browser credential manager storage is optional
+    }
+  }
+
   async function checkSession() {
-    // Check if URL has a password recovery hash (#access_token=...&type=recovery)
-    if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+    const gate = document.getElementById('auth-gate-section');
+    const dash = document.getElementById('admin-dashboard-section');
+    const authActions = document.getElementById('auth-header-actions');
+
+    // Handle expired/invalid email link errors in URL
+    if (window.FlipBackend && window.FlipBackend.authErrorFromUrl) {
+      const errMsg = window.FlipBackend.authErrorFromUrl.replace(/\+/g, ' ');
+      window.FlipBackend.authErrorFromUrl = null;
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+      gate.style.display = 'block';
+      dash.style.display = 'none';
+      authActions.style.display = 'none';
+      showForgotPasswordView();
+      showAlert(errMsg || 'Reset link has expired. Please request a new reset link.');
+      return;
+    }
+
+    // Check if opened via a Supabase password recovery redirect link
+    const isRecovery = (window.FlipBackend && window.FlipBackend.isRecoveryRedirect) ||
+      (typeof window !== 'undefined' && (window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')));
+
+    if (isRecovery) {
+      gate.style.display = 'block';
+      dash.style.display = 'none';
+      authActions.style.display = 'none';
       showResetPasswordView();
+      showAlert('Recovery link verified. Please enter your new password below.', 'success');
       return;
     }
 
     const session = await window.FlipBackend.getSession();
-    const gate = document.getElementById('auth-gate-section');
-    const dash = document.getElementById('admin-dashboard-section');
-    const authActions = document.getElementById('auth-header-actions');
 
     if (session) {
       gate.style.display = 'none';
@@ -57,7 +111,21 @@
     }
   }
 
+  if (typeof window !== 'undefined') {
+    window.addEventListener('flip_password_recovery', function () {
+      const gate = document.getElementById('auth-gate-section');
+      const dash = document.getElementById('admin-dashboard-section');
+      const authActions = document.getElementById('auth-header-actions');
+      if (gate) gate.style.display = 'block';
+      if (dash) dash.style.display = 'none';
+      if (authActions) authActions.style.display = 'none';
+      showResetPasswordView();
+      showAlert('Recovery link verified. Please enter your new password below.', 'success');
+    });
+  }
+
   window.showLoginView = function () {
+    if (window.FlipBackend) window.FlipBackend.isRecoveryRedirect = false;
     document.getElementById('owner-login-form').style.display = 'block';
     document.getElementById('forgot-password-form').style.display = 'none';
     document.getElementById('reset-password-form').style.display = 'none';
@@ -86,6 +154,7 @@
 
     try {
       await window.FlipBackend.login(email, pass);
+      await saveCredentialToBrowser(email.trim(), pass);
       showAlert('Session authenticated successfully.', 'success');
       checkSession();
     } catch (err) {
@@ -102,21 +171,20 @@
     const btn = document.getElementById('forgot-btn');
 
     btn.disabled = true;
-    btn.textContent = 'Sending Recovery...';
+    btn.textContent = 'Sending Reset Link...';
 
     try {
-      const res = await window.FlipBackend.requestPasswordReset(email);
-      if (res.method === 'supabase') {
-        showAlert('Password reset link sent to your email. Check your inbox.', 'success');
-      } else {
-        showAlert('Reset session verified. Enter your new password.', 'success');
-        showResetPasswordView();
-      }
+      await window.FlipBackend.requestPasswordReset(email);
+      showAlert(`Password reset link sent to ${email.trim()}. Click the link in your inbox to set a new password.`, 'success');
     } catch (err) {
-      showAlert(err.message || 'Password reset request failed.');
+      if (err && err.message === 'incorrect credentials') {
+        showAlert('incorrect credentials');
+      } else {
+        showAlert((err && err.message) || 'Could not send reset link. Please wait a moment and try again.');
+      }
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Send Reset Link';
+      btn.textContent = 'Send Password Reset Link';
     }
   };
 
@@ -141,18 +209,20 @@
 
     try {
       await window.FlipBackend.updatePassword(newPass);
-      showAlert('Password updated successfully. Session active.', 'success');
-      // Clean recovery hash if present in URL
+      await saveCredentialToBrowser('rajiadinoyi0@gmail.com', newPass);
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname);
       }
+      document.getElementById('new-pass').value = '';
+      document.getElementById('confirm-pass').value = '';
+      showAlert('Password updated successfully! Session authenticated.', 'success');
       showLoginView();
       checkSession();
     } catch (err) {
-      showAlert(err.message || 'Failed to update password.');
+      showAlert(err.message || 'Password update failed.');
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Update Password & Login';
+      btn.textContent = 'Update Password & Sign In';
     }
   };
 

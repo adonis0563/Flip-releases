@@ -35,7 +35,7 @@
         <h1 class="auth-title">Owner Authentication</h1>
         <p class="auth-desc">Private administration console. Unauthenticated requests are restricted.</p>
 
-        <form id="owner-login-form" onsubmit="handleLogin(event)">
+        <form id="owner-login-form" method="post" action="#login" onsubmit="handleLogin(event)">
           <div class="security-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <span>Secured Administrator Portal</span>
@@ -43,7 +43,7 @@
 
           <div class="form-group">
             <label for="login-email" class="form-label">Administrator Email</label>
-            <input type="email" id="login-email" class="form-input" placeholder="rajiadinoyi0@gmail.com" value="rajiadinoyi0@gmail.com" required autocomplete="username">
+            <input type="email" id="login-email" name="username" class="form-input" placeholder="name@example.com" value="" required autocomplete="username">
           </div>
 
           <div class="form-group">
@@ -51,7 +51,12 @@
               <label for="login-pass" class="form-label" style="margin-bottom: 0;">Password</label>
               <button type="button" class="auth-link" style="font-size: 13px;" onclick="showForgotPasswordView()">Forgot password?</button>
             </div>
-            <input type="password" id="login-pass" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+            <div class="password-input-wrap">
+              <input type="password" id="login-pass" name="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-pass', this)" aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" id="login-btn" class="btn btn-primary btn-block">Authenticate Session</button>
@@ -65,45 +70,59 @@
           </div>
 
           <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
-            Enter your admin email to receive a secure password reset link or recovery code.
+            Enter your administrator email to receive a password reset link.
           </p>
 
           <div class="form-group">
             <label for="forgot-email" class="form-label">Administrator Email</label>
-            <input type="email" id="forgot-email" class="form-input" placeholder="rajiadinoyi0@gmail.com" value="rajiadinoyi0@gmail.com" required autocomplete="email">
+            <input type="email" id="forgot-email" name="username" class="form-input" placeholder="name@example.com" value="" required autocomplete="username">
           </div>
 
-          <button type="submit" id="forgot-btn" class="btn btn-primary btn-block">Send Reset Link</button>
+          <button type="submit" id="forgot-btn" class="btn btn-primary btn-block">Send Password Reset Link</button>
 
           <div class="auth-links" style="justify-content: center;">
             <button type="button" class="auth-link" onclick="showLoginView()">← Return to Login</button>
           </div>
         </form>
 
-        <!-- Update / Reset Password Form (Triggered via Reset Callback) -->
-        <form id="reset-password-form" style="display: none;" onsubmit="handleUpdatePassword(event)">
+        <!-- Set New Password Form (Opened via Email Recovery Link) -->
+        <form id="reset-password-form" method="post" action="#reset" style="display: none;" onsubmit="handleUpdatePassword(event)">
           <div class="security-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>Set New Password</span>
+            <span>Set New Administrator Password</span>
           </div>
 
           <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
-            Enter a new, strong password for your administrator account.
+            Enter and confirm your new administrator password below.
           </p>
+
+          <input type="email" id="reset-username" name="username" value="rajiadinoyi0@gmail.com" autocomplete="username" style="display: none;" aria-hidden="true">
 
           <div class="form-group">
             <label for="new-pass" class="form-label">New Password</label>
-            <input type="password" id="new-pass" class="form-input" placeholder="Minimum 8 characters" minlength="8" required autocomplete="new-password">
+            <div class="password-input-wrap">
+              <input type="password" id="new-pass" name="new-password" class="form-input" placeholder="Minimum 8 characters" minlength="8" required autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('new-pass', this)" aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
             <label for="confirm-pass" class="form-label">Confirm New Password</label>
-            <input type="password" id="confirm-pass" class="form-input" placeholder="Re-type new password" minlength="8" required autocomplete="new-password">
+            <div class="password-input-wrap">
+              <input type="password" id="confirm-pass" name="confirm-password" class="form-input" placeholder="Re-type new password" minlength="8" required autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm-pass', this)" aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
-          <button type="submit" id="reset-btn" class="btn btn-primary btn-block">Update Password & Login</button>
+          <button type="submit" id="reset-btn" class="btn btn-primary btn-block">Update Password & Sign In</button>
 
           <div class="auth-links" style="justify-content: center;">
+            <button type="button" class="auth-link" onclick="showForgotPasswordView()">Resend Reset Link</button>
+            <span style="color: var(--color-border-strong); margin: 0 var(--space-8);">•</span>
             <button type="button" class="auth-link" onclick="showLoginView()">Cancel</button>
           </div>
         </form>
@@ -225,7 +244,12 @@
 
             <div class="form-group">
               <label for="cfg-supabase-key" class="form-label">Supabase Anon Key</label>
-              <input type="password" id="cfg-supabase-key" class="form-input" placeholder="eyJh...">
+              <div class="password-input-wrap">
+                <input type="password" id="cfg-supabase-key" class="form-input" placeholder="eyJh..." autocomplete="off">
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cfg-supabase-key', this)" aria-label="Show key" aria-pressed="false" title="Show key">
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Save Backend Settings</button>
@@ -238,6 +262,7 @@
 
   <!-- Scripts: Supabase CDN + Shared Backend + Admin Logic -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/env-config.js"></script>
   <script src="js/backend.js"></script>
   <script src="js/admin.js"></script>
 </body>

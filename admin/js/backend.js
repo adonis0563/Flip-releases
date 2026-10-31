@@ -79,8 +79,25 @@
   class BackendClient {
     constructor() {
       this.supabase = null;
+      this.isRecoveryRedirect = false;
+      this.authErrorFromUrl = null;
+      this.detectUrlAuthState();
       this.initStorage();
       this.initSupabaseIfConfigured();
+    }
+
+    detectUrlAuthState() {
+      if (typeof window === 'undefined') return;
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+        this.isRecoveryRedirect = true;
+      }
+      const combined = (hash.startsWith('#') ? hash.slice(1) : hash) + '&' + (search.startsWith('?') ? search.slice(1) : search);
+      const params = new URLSearchParams(combined);
+      if (params.get('error_description') || params.get('error')) {
+        this.authErrorFromUrl = params.get('error_description') || params.get('error');
+      }
     }
 
     initStorage() {
@@ -94,11 +111,59 @@
 
     initSupabaseIfConfigured() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY_CONFIG);
-        if (raw) {
-          const cfg = JSON.parse(raw);
-          if (cfg.supabaseUrl && cfg.supabaseKey && typeof window !== 'undefined' && window.supabase) {
-            this.supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+        let cfg = null;
+        if (typeof window !== 'undefined' && window.FLIP_ENV && window.FLIP_ENV.supabaseUrl) {
+          cfg = window.FLIP_ENV;
+        } else {
+          const raw = localStorage.getItem(STORAGE_KEY_CONFIG);
+          if (raw) {
+            cfg = JSON.parse(raw);
+          }
+        }
+
+        if (cfg && cfg.supabaseUrl && cfg.supabaseKey && typeof window !== 'undefined' && window.supabase) {
+          this.supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+
+          // Listen for Supabase PASSWORD_RECOVERY or session events from email redirect links
+          this.supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && this.isRecoveryRedirect)) {
+              this.isRecoveryRedirect = true;
+              if (session && session.access_token) {
+                localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
+                  authenticated: true,
+                  role: 'owner',
+                  email: (session.user && session.user.email) || 'rajiadinoyi0@gmail.com',
+                  token: session.access_token,
+                  expiresAt: Date.now() + ((session.expires_in || 3600) * 1000)
+                }));
+              }
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('flip_password_recovery'));
+              }
+            }
+          });
+
+          // Support token_hash recovery links (?token_hash=...&type=recovery) if used by template
+          if (typeof window !== 'undefined') {
+            const searchParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
+            const type = searchParams.get('type') || hashParams.get('type');
+            if (tokenHash && type === 'recovery') {
+              this.isRecoveryRedirect = true;
+              this.supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' }).then(({ data }) => {
+                if (data && data.session) {
+                  localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
+                    authenticated: true,
+                    role: 'owner',
+                    email: (data.user && data.user.email) || 'rajiadinoyi0@gmail.com',
+                    token: data.session.access_token,
+                    expiresAt: Date.now() + ((data.session.expires_in || 3600) * 1000)
+                  }));
+                  window.dispatchEvent(new CustomEvent('flip_password_recovery'));
+                }
+              }).catch(() => {});
+            }
           }
         }
       } catch (e) {
@@ -113,32 +178,37 @@
       const normalizedEmail = (email || '').trim().toLowerCase();
       const adminEmail = 'rajiadinoyi0@gmail.com';
 
-      // 1. If Supabase client is configured, authenticate via Supabase Auth
-      if (this.supabase) {
-        const { data, error } = await this.supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password: password
-        });
-        if (error) {
-          throw new Error('incorrect credentials');
-        }
-        localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
-          authenticated: true,
-          role: 'owner',
-          email: data.user.email,
-          token: data.session.access_token,
-          expiresAt: Date.now() + (data.session.expires_in * 1000)
-        }));
-        return data.user;
-      }
-
-      // 2. Strict Administrator Email Gate (enforcing owner identity)
+      // 1. Strict Administrator Email Gate (enforcing owner identity)
       if (normalizedEmail !== adminEmail && normalizedEmail !== 'admin@flip.app') {
         throw new Error('incorrect credentials');
       }
 
-      // 3. Cryptographic Verification for local storage mode
       const hash = await this.sha256Hex(password);
+
+      // 2. If Supabase client is configured, attempt Supabase Auth first
+      if (this.supabase) {
+        try {
+          const { data, error } = await this.supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password: password
+          });
+          if (!error && data && data.user) {
+            localStorage.setItem('flip_owner_hash', hash);
+            localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
+              authenticated: true,
+              role: 'owner',
+              email: data.user.email,
+              token: data.session.access_token,
+              expiresAt: Date.now() + (data.session.expires_in * 1000)
+            }));
+            return data.user;
+          }
+        } catch (_) {
+          // Fall through to master key check below
+        }
+      }
+
+      // 3. Cryptographic Verification for master password
       const storedMasterHash = localStorage.getItem('flip_owner_hash');
 
       if (!storedMasterHash) {
@@ -167,43 +237,47 @@
     }
 
     /**
-     * Sends password reset email via Supabase Auth or sets up local reset token
+     * Sends password reset email link via Supabase Auth
      */
     async requestPasswordReset(email) {
       const normalizedEmail = (email || '').trim().toLowerCase();
       const adminEmail = 'rajiadinoyi0@gmail.com';
 
       if (normalizedEmail !== adminEmail && normalizedEmail !== 'admin@flip.app') {
-        throw new Error('Password reset unavailable for this address. Verify admin email.');
+        throw new Error('incorrect credentials');
       }
 
-      // If Supabase is active, trigger password recovery email
       if (this.supabase) {
-        const redirectUrl = typeof window !== 'undefined' ? window.location.href.split('#')[0] : '';
-        const { data, error } = await this.supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        const redirectUrl = typeof window !== 'undefined'
+          ? (window.location.origin + window.location.pathname)
+          : 'https://flip-admin.pages.dev/';
+
+        let { error } = await this.supabase.auth.resetPasswordForEmail(normalizedEmail, {
           redirectTo: redirectUrl
         });
-        if (error) throw error;
-        return { success: true, method: 'supabase' };
-      }
 
-      // Local / Offline fallback: generate a secure session reset key
-      const resetToken = 'rst_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-      localStorage.setItem('flip_pwd_reset_token', JSON.stringify({
-        token: resetToken,
-        email: normalizedEmail,
-        expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutes
-      }));
+        if (error) {
+          // Retry without explicit redirectTo so Supabase uses its configured Site URL
+          const fallback = await this.supabase.auth.resetPasswordForEmail(normalizedEmail);
+          error = fallback.error;
+        }
+
+        if (error) {
+          throw new Error(error.message || 'Unable to send reset link right now.');
+        }
+
+        return { success: true, method: 'supabase', email: normalizedEmail };
+      }
 
       return {
         success: true,
         method: 'local',
-        token: resetToken
+        email: normalizedEmail
       };
     }
 
     /**
-     * Sets a new password after reset verification
+     * Updates the administrator password after following the recovery link
      */
     async updatePassword(newPassword) {
       if (!newPassword || newPassword.length < 8) {
@@ -211,17 +285,18 @@
       }
 
       if (this.supabase) {
-        const { data, error } = await this.supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
-        return true;
+        const { error } = await this.supabase.auth.updateUser({
+          password: newPassword
+        });
+        if (error && !/different from the old password/i.test(error.message || '')) {
+          throw new Error(error.message || 'Failed to update password. Your reset link may have expired.');
+        }
       }
 
-      // Update local master password hash
       const newHash = await this.sha256Hex(newPassword);
       localStorage.setItem('flip_owner_hash', newHash);
-      localStorage.removeItem('flip_pwd_reset_token');
+      this.isRecoveryRedirect = false;
 
-      // Auto-login into new session
       localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
         authenticated: true,
         role: 'owner',
