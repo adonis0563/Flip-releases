@@ -140,6 +140,9 @@
         </div>
       </div>
 
+      <!-- Real-Time Live Metrics KPI Strip (Admin Only) -->
+      <div id="live-metrics-summary-container"></div>
+
       <!-- Staged v1.0.1 What's New & Release Master Toggle -->
       <div id="staged-release-control-container"></div>
 
@@ -148,6 +151,7 @@
         <button class="tab-btn active" onclick="switchTab('tab-upload')" role="tab">Upload Item</button>
         <button class="tab-btn" onclick="switchTab('tab-items')" role="tab">What's New & Items (<span id="count-items">0</span>)</button>
         <button class="tab-btn" onclick="switchTab('tab-releases')" role="tab">Releases</button>
+        <button class="tab-btn" onclick="switchTab('tab-metrics')" role="tab">Live Metrics</button>
         <button class="tab-btn" onclick="switchTab('tab-settings')" role="tab">Backend Settings</button>
       </div>
 
@@ -234,7 +238,14 @@
         </div>
       </section>
 
-      <!-- TAB 4: BACKEND CONFIGURATION (SUPABASE) -->
+      <!-- TAB 4: LIVE METRICS & REALTIME TELEMETRY -->
+      <section id="tab-metrics" class="tab-content" style="display: none;">
+        <div id="live-metrics-detail-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 5: BACKEND CONFIGURATION (SUPABASE) -->
       <section id="tab-settings" class="tab-content" style="display: none;">
         <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-16);">
           <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--space-8);">Shared Backend Provider</h2>

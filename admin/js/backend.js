@@ -426,6 +426,38 @@
       return false;
     }
 
+    async getLiveMetrics() {
+      if (typeof fetch === 'undefined') return null;
+      const endpoints = ['/api/metrics', 'https://flip-admin.pages.dev/api/metrics'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { cache: 'no-store' });
+          if (res.ok) {
+            return await res.json();
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
+    async resetLiveMetrics() {
+      if (typeof fetch === 'undefined') return null;
+      const endpoints = ['/api/metrics', 'https://flip-admin.pages.dev/api/metrics'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'reset' })
+          });
+          if (res.ok) {
+            return await res.json();
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
     // ========================================================
     // RELEASES DATA (Public reads published only)
     // ========================================================

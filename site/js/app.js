@@ -38,8 +38,74 @@
     }
   };
 
+  function getVisitorId() {
+    try {
+      let vid = localStorage.getItem('flip_visitor_id');
+      if (!vid) {
+        vid = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+        localStorage.setItem('flip_visitor_id', vid);
+      }
+      return vid;
+    } catch (_) {
+      return 'v_anon_' + Math.random().toString(36).slice(2, 9);
+    }
+  }
+
+  function sendMetricEvent(payload) {
+    const body = JSON.stringify({
+      ...payload,
+      visitorId: getVisitorId(),
+      page: window.location.pathname || '/'
+    });
+
+    if (navigator.sendBeacon && (payload.type === 'leave' || payload.type === 'download')) {
+      try {
+        const blob = new Blob([body], { type: 'application/json' });
+        if (navigator.sendBeacon('/api/metrics', blob)) return;
+      } catch (_) {}
+    }
+
+    fetch('/api/metrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true
+    }).catch(() => {
+      fetch('https://flip-admin.pages.dev/api/metrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true
+      }).catch(() => {});
+    });
+  }
+
+  function initLiveTelemetry() {
+    // Record real page visit
+    sendMetricEvent({ type: 'visit' });
+
+    // Send live presence heartbeat every 25s while tab is open
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        sendMetricEvent({ type: 'heartbeat' });
+      }
+    }, 25000);
+
+    window.addEventListener('pagehide', () => {
+      sendMetricEvent({ type: 'leave' });
+    });
+  }
+
   window.recordDownloadClick = function (item) {
     try {
+      sendMetricEvent({
+        type: 'download',
+        platform: item.platform,
+        filename: item.filename,
+        version: item.version,
+        fileSize: item.fileSize || 0
+      });
+
       const raw = localStorage.getItem('flip_analytics_events');
       const events = raw ? JSON.parse(raw) : [];
       events.unshift({
@@ -215,6 +281,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    initLiveTelemetry();
     renderReleases();
     renderMediaItems();
     setupScrollSpy();

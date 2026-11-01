@@ -104,7 +104,9 @@
       dash.style.display = 'block';
       authActions.style.display = 'block';
       loadAllData();
+      startMetricsPolling();
     } else {
+      stopMetricsPolling();
       gate.style.display = 'block';
       dash.style.display = 'none';
       authActions.style.display = 'none';
@@ -338,7 +340,7 @@
   // 5. ITEM MANAGEMENT (REORDER, EDIT, DELETE, TOGGLE DRAFT)
   // ========================================================
   async function loadAllData() {
-    await Promise.all([renderStagedReleaseControl(), renderAdminItems(), renderAdminReleases()]);
+    await Promise.all([renderLiveMetrics(), renderStagedReleaseControl(), renderAdminItems(), renderAdminReleases()]);
   }
 
   async function renderStagedReleaseControl() {
@@ -565,7 +567,246 @@
   };
 
   // ========================================================
-  // 7. BACKEND CONFIGURATION
+  // 7. REAL-TIME LIVE METRICS (ADMIN ONLY)
+  // ========================================================
+  let metricsPollTimer = null;
+
+  function startMetricsPolling() {
+    stopMetricsPolling();
+    metricsPollTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        renderLiveMetrics();
+      }
+    }, 5000);
+  }
+
+  function stopMetricsPolling() {
+    if (metricsPollTimer) {
+      clearInterval(metricsPollTimer);
+      metricsPollTimer = null;
+    }
+  }
+
+  function formatTimeAgo(isoString) {
+    if (!isoString) return 'Just now';
+    const diffSec = Math.max(0, Math.floor((Date.now() - new Date(isoString).getTime()) / 1000));
+    if (diffSec < 5) return 'Just now';
+    if (diffSec < 60) return `${diffSec}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return `${Math.floor(diffHr / 24)}d ago`;
+  }
+
+  async function renderLiveMetrics() {
+    const summaryContainer = document.getElementById('live-metrics-summary-container');
+    const detailContainer = document.getElementById('live-metrics-detail-container');
+    if (!summaryContainer && !detailContainer) return;
+
+    const m = await window.FlipBackend.getLiveMetrics();
+    if (!m) return;
+
+    const byPlat = m.downloadsByPlatform || {};
+    const androidDl = byPlat['android'] || 0;
+    const winInstallerDl = byPlat['windows-installer'] || 0;
+    const winPortableDl = byPlat['windows-portable'] || 0;
+    const winTotalDl = winInstallerDl + winPortableDl;
+    const totalDl = m.totalDownloads || 0;
+    const totalVisits = m.totalVisits || 0;
+
+    if (summaryContainer) {
+      summaryContainer.innerHTML = `
+        <div class="metrics-header-bar">
+          <div style="display: flex; align-items: center; gap: var(--space-8);">
+            <span class="live-indicator"><span class="live-dot"></span> LIVE TELEMETRY</span>
+            <span style="font-size: 12px; color: var(--color-text-muted);">Auto-syncs every 5s</span>
+          </div>
+          <div style="display: flex; gap: var(--space-8);">
+            <button class="btn btn-secondary btn-sm" onclick="refreshMetricsNow()">Refresh</button>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-metrics')">Full Breakdown</button>
+          </div>
+        </div>
+
+        <div class="metrics-kpi-grid">
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Online Now</span>
+            <span class="metric-kpi-value" style="color: var(--color-status-published);">${m.onlineNow || 0}</span>
+            <span class="metric-kpi-sub">Active on site</span>
+          </div>
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Total Visits</span>
+            <span class="metric-kpi-value">${totalVisits}</span>
+            <span class="metric-kpi-sub">${m.visitsToday || 0} today</span>
+          </div>
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Unique Visitors</span>
+            <span class="metric-kpi-value">${m.uniqueVisitors || 0}</span>
+            <span class="metric-kpi-sub">Distinct devices</span>
+          </div>
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Total Downloads</span>
+            <span class="metric-kpi-value">${totalDl}</span>
+            <span class="metric-kpi-sub">${m.downloadsToday || 0} today</span>
+          </div>
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Android APK</span>
+            <span class="metric-kpi-value">${androidDl}</span>
+            <span class="metric-kpi-sub">Flip.apk</span>
+          </div>
+          <div class="metric-kpi-card">
+            <span class="metric-kpi-label">Windows PC</span>
+            <span class="metric-kpi-value">${winTotalDl}</span>
+            <span class="metric-kpi-sub">${winInstallerDl} Setup / ${winPortableDl} Portable</span>
+          </div>
+        </div>
+      `;
+    }
+
+    if (detailContainer) {
+      const filesMap = m.downloadsByFile || {};
+      const fileEntries = Object.entries(filesMap).sort((a, b) => b[1] - a[1]);
+
+      const devicesMap = m.devices || {};
+      const deviceEntries = Object.entries(devicesMap).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+
+      const countriesMap = m.countries || {};
+      const countryEntries = Object.entries(countriesMap).sort((a, b) => b[1] - a[1]);
+
+      const recent = m.recentEvents || [];
+      const activeVisitors = m.activeVisitors || [];
+
+      detailContainer.innerHTML = `
+        <div class="metrics-header-bar">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700;">Real-Time Traffic & Download Analytics</h2>
+            <p style="font-size: 13px; color: var(--color-text-secondary);">
+              Total data delivered: <strong style="color: var(--color-text-primary); font-family: var(--font-mono);">${formatBytes(m.totalBandwidthBytes || 0)}</strong>
+            </p>
+          </div>
+          <div style="display: flex; gap: var(--space-8);">
+            <button class="btn btn-secondary btn-sm" onclick="refreshMetricsNow()">Refresh Now</button>
+            <button class="btn btn-danger btn-sm" onclick="resetMetrics()">Reset Counters</button>
+          </div>
+        </div>
+
+        <div class="metrics-panels-grid">
+          <!-- Downloads by Binary -->
+          <div class="metrics-panel-card">
+            <h3 class="metrics-panel-title">Downloads by Binary</h3>
+            ${fileEntries.length === 0 ? `
+              <p style="font-size: 13px; color: var(--color-text-muted);">No binary downloads recorded yet.</p>
+            ` : fileEntries.map(([name, count]) => {
+              const pct = totalDl > 0 ? Math.round((count / totalDl) * 100) : 0;
+              return `
+                <div class="metric-bar-row">
+                  <div class="metric-bar-top">
+                    <span style="font-weight: 600;">${name}</span>
+                    <span style="font-family: var(--font-mono);">${count} (${pct}%)</span>
+                  </div>
+                  <div class="metric-bar-track">
+                    <div class="metric-bar-fill" style="width: ${pct}%;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Visitor Operating Systems & Countries -->
+          <div class="metrics-panel-card">
+            <h3 class="metrics-panel-title">Visitors by Device & Country</h3>
+            ${deviceEntries.length === 0 ? `
+              <p style="font-size: 13px; color: var(--color-text-muted);">No visitor device telemetry recorded yet.</p>
+            ` : deviceEntries.map(([dev, count]) => {
+              const pct = totalVisits > 0 ? Math.round((count / totalVisits) * 100) : 0;
+              return `
+                <div class="metric-bar-row">
+                  <div class="metric-bar-top">
+                    <span style="font-weight: 600;">${dev}</span>
+                    <span style="font-family: var(--font-mono);">${count} (${pct}%)</span>
+                  </div>
+                  <div class="metric-bar-track">
+                    <div class="metric-bar-fill" style="width: ${pct}%;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+
+            ${countryEntries.length > 0 ? `
+              <div style="margin-top: var(--space-16); padding-top: var(--space-16); border-top: 1px solid var(--color-border-subtle);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: var(--space-8);">Top Countries</div>
+                <div style="display: flex; gap: var(--space-8); flex-wrap: wrap;">
+                  ${countryEntries.map(([code, cnt]) => `
+                    <span style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-strong); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-family: var(--font-mono);">
+                      ${code}: <strong>${cnt}</strong>
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Currently Online Visitors -->
+        <div class="metrics-panel-card" style="margin-bottom: var(--space-16);">
+          <h3 class="metrics-panel-title">Active Visitors Right Now (${activeVisitors.length})</h3>
+          ${activeVisitors.length === 0 ? `
+            <p style="font-size: 13px; color: var(--color-text-muted);">No visitors currently have the public site open.</p>
+          ` : activeVisitors.map(v => `
+            <div class="live-event-item">
+              <div>
+                <span class="event-badge event-badge-download">ONLINE</span>
+                <strong style="margin-left: var(--space-8);">${v.device || 'Browser'}</strong>
+                <span style="color: var(--color-text-secondary); margin-left: var(--space-8);">Page: ${v.page || '/'}</span>
+              </div>
+              <div style="font-size: 12px; font-family: var(--font-mono); color: var(--color-text-muted);">
+                ${v.country || ''}${v.city ? ' (' + v.city + ')' : ''} • Active ${formatTimeAgo(new Date(v.lastSeen).toISOString())}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Live Event Stream -->
+        <div class="metrics-panel-card">
+          <h3 class="metrics-panel-title">Live Activity Stream (Last ${recent.length} Events)</h3>
+          ${recent.length === 0 ? `
+            <p style="font-size: 13px; color: var(--color-text-muted);">Waiting for real visits and downloads on the public website...</p>
+          ` : recent.map(ev => `
+            <div class="live-event-item">
+              <div>
+                <span class="event-badge ${ev.type === 'download' ? 'event-badge-download' : 'event-badge-visit'}">
+                  ${ev.type === 'download' ? 'DOWNLOAD' : 'VISIT'}
+                </span>
+                <strong style="margin-left: var(--space-8);">${ev.label}</strong>
+                <span style="color: var(--color-text-secondary); margin-left: var(--space-8);">
+                  ${ev.device || ''} ${ev.country && ev.country !== 'XX' ? '• ' + ev.country : ''}${ev.city ? ' (' + ev.city + ')' : ''}
+                </span>
+              </div>
+              <span style="font-size: 12px; font-family: var(--font-mono); color: var(--color-text-muted);">
+                ${formatTimeAgo(ev.timestamp)}
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+
+  window.refreshMetricsNow = async function () {
+    await renderLiveMetrics();
+    showAlert('Live metrics refreshed.', 'success');
+  };
+
+  window.resetMetrics = async function () {
+    if (confirm('Are you sure you want to reset all live visit and download counters to zero?')) {
+      await window.FlipBackend.resetLiveMetrics();
+      await renderLiveMetrics();
+      showAlert('All live metrics counters have been reset to zero.', 'success');
+    }
+  };
+
+  // ========================================================
+  // 8. BACKEND CONFIGURATION
   // ========================================================
   window.handleSaveBackendConfig = function (e) {
     e.preventDefault();
