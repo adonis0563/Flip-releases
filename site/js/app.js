@@ -177,6 +177,52 @@
     }
   }
 
+  function formatWhatsNewDescription(rawText) {
+    if (!rawText) return '';
+    // Split into blocks separated by double newlines or section headers
+    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const groups = [];
+    let currentGroup = null;
+
+    for (const line of lines) {
+      const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*');
+      if (!isBullet && line.length < 48 && !line.endsWith('.')) {
+        currentGroup = { heading: line, items: [] };
+        groups.push(currentGroup);
+      } else {
+        if (!currentGroup) {
+          currentGroup = { heading: '', items: [] };
+          groups.push(currentGroup);
+        }
+        currentGroup.items.push(line.replace(/^[•\-*]\s*/, ''));
+      }
+    }
+
+    if (groups.length === 0) return '';
+
+    return `<div class="whatsnew-grid">` + groups.map(g => {
+      let headingHtml = '';
+      if (g.heading) {
+        if (/^flip web/i.test(g.heading)) {
+          headingHtml = `
+            <h3 class="whatsnew-group-title">
+              <a href="web-mode.html" class="whatsnew-web-link">
+                <span>${g.heading}</span>
+                <span class="whatsnew-web-badge">How it works &rarr;</span>
+              </a>
+            </h3>
+          `;
+        } else {
+          headingHtml = `<h3 class="whatsnew-group-title">${g.heading}</h3>`;
+        }
+      }
+      const listHtml = g.items.length > 0
+        ? `<ul class="whatsnew-list">${g.items.map(it => `<li>${it}</li>`).join('')}</ul>`
+        : '';
+      return `<div class="whatsnew-group">${headingHtml}${listHtml}</div>`;
+    }).join('') + `</div>`;
+  }
+
   async function renderMediaItems() {
     const container = document.getElementById('media-showcase-container');
     const whatsNewSection = document.getElementById('whats-new');
@@ -192,10 +238,15 @@
         if (whatsNewItems.length > 0) {
           whatsNewSection.style.display = 'block';
           whatsNewContainer.innerHTML = whatsNewItems.map(item => `
-            <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-strong); border-radius: var(--border-radius); padding: var(--space-24); margin-bottom: var(--space-16);">
-              <h2 class="section-title" style="margin-bottom: var(--space-16);">${item.title}</h2>
-              <div class="media-desc" style="font-size: 15px; line-height: 1.6; white-space: pre-line;">${item.description || ''}</div>
-            </div>
+            <article class="whatsnew-writeup-card">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--space-8); border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-16);">
+                <h2 class="section-title" style="margin-bottom: 0;">${item.title}</h2>
+                <a href="web-mode.html" style="font-size: 14px; font-weight: 600; color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 4px;">
+                  Read the Flip Web Mode Guide &rarr;
+                </a>
+              </div>
+              ${formatWhatsNewDescription(item.description)}
+            </article>
           `).join('');
         } else {
           whatsNewSection.style.display = 'none';

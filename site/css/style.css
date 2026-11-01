@@ -132,6 +132,14 @@ button {
   min-width: var(--min-touch-size);
 }
 
+.brand-logo-icon, .brand-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius);
+  display: block;
+  flex-shrink: 0;
+}
+
 .brand-mark {
   background: var(--color-text-primary);
   color: var(--color-bg-base);
@@ -620,4 +628,142 @@ button {
     justify-content: space-between;
     align-items: center;
   }
+}
+
+/* What's New Write-Up Section (Before Downloads) */
+.whatsnew-writeup-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius);
+  padding: var(--space-24);
+}
+
+@media (min-width: 768px) {
+  .whatsnew-writeup-card {
+    padding: var(--space-32);
+  }
+}
+
+.whatsnew-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-24);
+  margin-top: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .whatsnew-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-32);
+  }
+}
+
+.whatsnew-group-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.whatsnew-web-link {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.whatsnew-web-link:hover {
+  opacity: 0.85;
+}
+
+.whatsnew-web-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  padding: 2px var(--space-8);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.whatsnew-list {
+  list-style: disc;
+  padding-left: var(--space-16);
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.whatsnew-list li {
+  margin-bottom: var(--space-4);
+}
+
+/* Step-by-Step Layman Guide (web-mode.html) */
+.step-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.step-guide-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius);
+  padding: var(--space-24);
+}
+
+.step-number-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  padding: 2px var(--space-8);
+  border-radius: 4px;
+  margin-bottom: var(--space-8);
+}
+
+.step-guide-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.step-guide-body {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.step-guide-note {
+  margin-top: var(--space-16);
+  padding: var(--space-16);
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius);
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+.step-guide-bullets {
+  list-style: disc;
+  padding-left: var(--space-24);
+  margin-top: var(--space-8);
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.step-guide-bullets li {
+  margin-bottom: var(--space-8);
 }

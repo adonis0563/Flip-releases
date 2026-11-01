@@ -313,7 +313,7 @@
         isPublished,
         fileSize: fileSize || 3142,
         type: type || 'image',
-        url: url || 'assets/flip-logo.jpg'
+        url: url || 'assets/favicon.svg'
       };
 
       await window.FlipBackend.saveMediaItem(itemData);
@@ -356,6 +356,14 @@
 
     const isPub = Boolean(whatsNewItem.isPublished);
     const safeItemJson = JSON.stringify(whatsNewItem).replace(/'/g, "&#39;");
+    const previewHtml = (whatsNewItem.description || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(
+        /Flip Web \(new\)/i,
+        '<a href="https://flip-download.pages.dev/web-mode.html" target="_blank" rel="noopener" style="color: var(--color-text-primary); font-weight: 700; text-decoration: underline; text-underline-offset: 4px;">Flip Web (new) &rarr; How to use it</a>'
+      );
 
     container.innerHTML = `
       <div class="staged-release-banner">
@@ -368,7 +376,7 @@
               </span>
             </div>
             <p style="font-size: 13px; color: var(--color-text-secondary);">
-              Flip the toggle switch below to publish or hide What's New on the public website.
+              Separate write-up displayed right before the APK &amp; PC download cards. Flip the toggle switch to publish or hide.
             </p>
           </div>
 
@@ -387,11 +395,12 @@
           </div>
         </div>
 
-        <div class="whatsnew-preview-box">${whatsNewItem.description || ''}</div>
+        <div class="whatsnew-preview-box">${previewHtml}</div>
 
         <div style="display: flex; gap: var(--space-8); margin-top: var(--space-16); flex-wrap: wrap;">
           <button class="btn btn-secondary btn-sm" onclick='editItem(${safeItemJson})'>Edit What's New Text</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-releases')">View v1.0.1 Binaries (APK & PC)</button>
+          <a href="https://flip-download.pages.dev/web-mode.html" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Preview Flip Web Guide &rarr;</a>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-releases')">View v1.0.1 Binaries (APK &amp; PC)</button>
         </div>
       </div>
     `;
@@ -423,7 +432,7 @@
             ${isVideo ? `
               <div class="item-thumb-preview" style="display: flex; align-items: center; justify-content: center; font-size: 18px;">🎥</div>
             ` : `
-              <img src="${item.url || 'assets/flip-logo.jpg'}" class="item-thumb-preview" alt="Preview">
+              <img src="${item.url || 'assets/favicon.svg'}" class="item-thumb-preview" alt="Preview">
             `}
             <div class="item-meta">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-8); flex-wrap: wrap; margin-bottom: var(--space-4);">
@@ -498,7 +507,7 @@
 
   window.editItem = function (item) {
     document.getElementById('item-id').value = item.id;
-    document.getElementById('item-url').value = item.url || 'assets/flip-logo.jpg';
+    document.getElementById('item-url').value = item.url || 'assets/favicon.svg';
     document.getElementById('item-title').value = item.title;
     document.getElementById('item-desc').value = item.description || '';
     document.getElementById('item-category').value = item.category || 'releases';

@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>Flip: Offline Peer-to-Peer File Sharing for Android and Windows</title>
   <meta name="description" content="Direct device-to-device file and folder transfers over local Wi-Fi without internet access, user accounts, or cloud storage.">
-  <link rel="icon" type="image/jpeg" href="assets/flip-logo.jpg">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,11 +16,12 @@
   <header class="site-header">
     <div class="container header-row">
       <a href="index.html" class="brand-link" aria-label="Flip Home">
-        <span class="brand-mark">→</span>
+        <img src="assets/favicon.svg" alt="Flip Logo" class="brand-logo-icon" width="28" height="28">
         <span class="brand-name">Flip</span>
       </a>
       <nav class="desktop-nav" aria-label="Primary Navigation">
         <a href="#downloads" class="nav-link active">Downloads</a>
+        <a href="web-mode.html" class="nav-link">Flip Web</a>
         <a href="#tutorials" class="nav-link">Guides</a>
         <a href="#specifications" class="nav-link">Specs</a>
         <a href="install.html" class="nav-link">Install</a>
@@ -37,9 +40,14 @@
         </p>
         <div class="button-stack">
           <a href="#downloads" class="btn btn-primary">Download Current Releases</a>
-          <a href="#specifications" class="btn btn-secondary">Technical Specifications</a>
+          <a href="web-mode.html" class="btn btn-secondary">How Flip Web Works</a>
         </div>
       </div>
+    </section>
+
+    <!-- Separate What's New Write-Up Section (Before the APK / Downloads, shown when toggled Public in Admin) -->
+    <section id="whats-new" class="container" style="padding-top: var(--space-32); display: none;">
+      <div id="whats-new-container"></div>
     </section>
 
     <!-- Downloads Section (Reads Live from Shared Backend) -->
@@ -52,11 +60,6 @@
       <div id="release-cards-container" class="release-grid">
         <!-- Rendered dynamically by app.js from FlipBackend.getReleases({ publicOnly: true }) -->
       </div>
-    </section>
-
-    <!-- What's New Section (Shown automatically when published in Admin) -->
-    <section id="whats-new" class="container" style="padding-top: var(--space-32); display: none;">
-      <div id="whats-new-container"></div>
     </section>
 
     <!-- Tutorials & Walkthroughs (Reads Live from Shared Backend) -->
@@ -111,19 +114,19 @@
       </svg>
       <span>Downloads</span>
     </a>
+    <a href="web-mode.html" class="mobile-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span>Flip Web</span>
+    </a>
     <a href="#tutorials" class="mobile-nav-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polygon points="5 3 19 12 5 21 5 3"></polygon>
       </svg>
       <span>Guides</span>
-    </a>
-    <a href="#specifications" class="mobile-nav-item">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="16" x2="12" y2="12"></line>
-        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-      </svg>
-      <span>Specs</span>
     </a>
     <a href="install.html" class="mobile-nav-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
