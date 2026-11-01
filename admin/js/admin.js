@@ -297,7 +297,7 @@
     const fileSize = parseInt(document.getElementById('item-file-size').value || '0', 10);
     const type = document.getElementById('item-file-type').value;
 
-    if (!url && !id) {
+    if (!url && !id && category !== 'releases') {
       showAlert('Please choose a file or image to upload first.');
       return;
     }
@@ -309,9 +309,9 @@
         description: desc,
         category,
         isPublished,
-        fileSize,
-        type,
-        url: url || undefined
+        fileSize: fileSize || 3142,
+        type: type || 'image',
+        url: url || 'assets/flip-logo.jpg'
       };
 
       await window.FlipBackend.saveMediaItem(itemData);
@@ -324,7 +324,7 @@
       document.getElementById('upload-progress-wrap').style.display = 'none';
       document.getElementById('save-item-btn').textContent = 'Save and Publish Item';
 
-      loadAllData();
+      await loadAllData();
       // Switch to Items tab
       window.switchTab('tab-items');
       const tabs = document.querySelectorAll('.tab-btn');
@@ -338,7 +338,61 @@
   // 5. ITEM MANAGEMENT (REORDER, EDIT, DELETE, TOGGLE DRAFT)
   // ========================================================
   async function loadAllData() {
-    await Promise.all([renderAdminItems(), renderAdminReleases()]);
+    await Promise.all([renderStagedReleaseControl(), renderAdminItems(), renderAdminReleases()]);
+  }
+
+  async function renderStagedReleaseControl() {
+    const container = document.getElementById('staged-release-control-container');
+    if (!container) return;
+
+    const items = await window.FlipBackend.getMediaItems({ publicOnly: false });
+    const whatsNewItem = items.find(m => m.id === 'media_whatsnew_v101' || m.category === 'releases') || items[0];
+    if (!whatsNewItem) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const isPub = Boolean(whatsNewItem.isPublished);
+    const safeItemJson = JSON.stringify(whatsNewItem).replace(/'/g, "&#39;");
+
+    container.innerHTML = `
+      <div class="staged-release-banner">
+        <div class="staged-banner-top">
+          <div>
+            <div style="display: flex; align-items: center; gap: var(--space-8); margin-bottom: var(--space-4);">
+              <strong style="font-size: 17px;">${whatsNewItem.title}</strong>
+              <span class="status-tag ${isPub ? 'status-published' : 'status-draft'}" style="margin-top: 0;">
+                ${isPub ? 'Published (Live on Website)' : 'Draft (Hidden — Ready for Tomorrow)'}
+              </span>
+            </div>
+            <p style="font-size: 13px; color: var(--color-text-secondary);">
+              Flip the toggle switch below to publish or hide What's New on the public website.
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: var(--space-16);">
+            <label class="toggle-control-wrap" title="Toggle What's New visibility on public site">
+              <span class="toggle-switch">
+                <input type="checkbox" ${isPub ? 'checked' : ''} onchange="togglePublish('${whatsNewItem.id}')">
+                <span class="toggle-slider"></span>
+              </span>
+              <span class="toggle-label-text">${isPub ? 'Public' : 'Draft'}</span>
+            </label>
+
+            <button class="btn ${isPub ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="togglePublish('${whatsNewItem.id}')">
+              ${isPub ? 'Set to Draft' : 'Make Public Now'}
+            </button>
+          </div>
+        </div>
+
+        <div class="whatsnew-preview-box">${whatsNewItem.description || ''}</div>
+
+        <div style="display: flex; gap: var(--space-8); margin-top: var(--space-16); flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-sm" onclick='editItem(${safeItemJson})'>Edit What's New Text</button>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-releases')">View v1.0.1 Binaries (APK & PC)</button>
+        </div>
+      </div>
+    `;
   }
 
   async function renderAdminItems() {
@@ -367,14 +421,23 @@
             ${isVideo ? `
               <div class="item-thumb-preview" style="display: flex; align-items: center; justify-content: center; font-size: 18px;">🎥</div>
             ` : `
-              <img src="${item.url}" class="item-thumb-preview" alt="Preview">
+              <img src="${item.url || 'assets/flip-logo.jpg'}" class="item-thumb-preview" alt="Preview">
             `}
             <div class="item-meta">
-              <h3 class="item-title-text">${item.title}</h3>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-8); flex-wrap: wrap; margin-bottom: var(--space-4);">
+                <h3 class="item-title-text">${item.title}</h3>
+                <label class="toggle-control-wrap" style="min-height: 32px;">
+                  <span class="toggle-switch">
+                    <input type="checkbox" ${item.isPublished ? 'checked' : ''} onchange="togglePublish('${item.id}')">
+                    <span class="toggle-slider"></span>
+                  </span>
+                  <span class="toggle-label-text">${item.isPublished ? 'Public' : 'Draft'}</span>
+                </label>
+              </div>
               <p class="item-desc-text">${item.description || 'No description provided.'}</p>
-              <div style="display: flex; gap: var(--space-8); align-items: center; margin-top: var(--space-4);">
+              <div style="display: flex; gap: var(--space-8); align-items: center; margin-top: var(--space-8);">
                 <span class="status-tag ${item.isPublished ? 'status-published' : 'status-draft'}">
-                  ${item.isPublished ? 'Published' : 'Draft (Hidden)'}
+                  ${item.isPublished ? 'Published (Live)' : 'Draft (Hidden)'}
                 </span>
                 <span style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-mono);">${formatBytes(item.fileSize)}</span>
               </div>
@@ -382,7 +445,7 @@
           </div>
 
           <div class="item-actions-row">
-            <button class="btn btn-secondary btn-sm" onclick="togglePublish('${item.id}')">
+            <button class="btn ${item.isPublished ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="togglePublish('${item.id}')">
               ${item.isPublished ? 'Set to Draft' : 'Publish'}
             </button>
             <button class="btn btn-secondary btn-sm" onclick="moveItem('${item.id}', -1)" ${index === 0 ? 'disabled style="opacity: 0.4;"' : ''}>
@@ -406,8 +469,8 @@
   window.togglePublish = async function (id) {
     try {
       const updated = await window.FlipBackend.togglePublished(id);
-      showAlert(`Status updated to ${updated.isPublished ? 'Published' : 'Draft'}.`, 'success');
-      renderAdminItems();
+      showAlert(`Status updated to ${updated.isPublished ? 'Published (Live on Website)' : 'Draft (Hidden)'}.`, 'success');
+      await loadAllData();
     } catch (err) {
       showAlert(err.message);
     }
@@ -428,20 +491,20 @@
 
     const newOrder = items.map(m => m.id);
     await window.FlipBackend.reorderMediaItems(newOrder);
-    renderAdminItems();
+    await loadAllData();
   };
 
   window.editItem = function (item) {
     document.getElementById('item-id').value = item.id;
-    document.getElementById('item-url').value = item.url;
+    document.getElementById('item-url').value = item.url || 'assets/flip-logo.jpg';
     document.getElementById('item-title').value = item.title;
     document.getElementById('item-desc').value = item.description || '';
-    document.getElementById('item-category').value = item.category || 'tutorials';
-    document.getElementById('item-published').checked = item.isPublished;
+    document.getElementById('item-category').value = item.category || 'releases';
+    document.getElementById('item-published').checked = Boolean(item.isPublished);
     document.getElementById('item-file-size').value = item.fileSize || 0;
     document.getElementById('item-file-type').value = item.type || 'image';
 
-    document.getElementById('save-item-btn').textContent = 'Update Item';
+    document.getElementById('save-item-btn').textContent = 'Save Changes';
     window.switchTab('tab-upload');
   };
 
@@ -450,7 +513,7 @@
       try {
         await window.FlipBackend.deleteMediaItem(id);
         showAlert(`Deleted "${title}".`, 'success');
-        renderAdminItems();
+        await loadAllData();
       } catch (err) {
         showAlert(err.message);
       }
@@ -467,18 +530,22 @@
     const releases = await window.FlipBackend.getReleases({ publicOnly: false });
     container.innerHTML = releases.map(rel => `
       <div style="background: var(--color-bg-base); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-16); margin-bottom: var(--space-16);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-8);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-16); flex-wrap: wrap; margin-bottom: var(--space-8);">
           <div>
             <strong style="font-size: 16px;">${rel.platformName} (v${rel.version})</strong>
             <span style="font-size: 12px; color: var(--color-text-muted); display: block;">${rel.filename} - ${formatBytes(rel.fileSize)}</span>
           </div>
-          <div style="display: flex; gap: var(--space-8); align-items: center;">
-            <span class="status-tag ${rel.isPublished ? 'status-published' : 'status-draft'}">
-              ${rel.isPublished ? 'Published' : 'Draft (Hidden)'}
+          <div style="display: flex; gap: var(--space-16); align-items: center;">
+            <span class="status-tag ${rel.isPublished ? 'status-published' : 'status-draft'}" style="margin-top: 0;">
+              ${rel.isPublished ? 'Published (Live)' : 'Draft (Hidden)'}
             </span>
-            <button class="btn btn-secondary btn-sm" onclick="toggleReleasePublish('${rel.id}')">
-              ${rel.isPublished ? 'Set to Draft' : 'Publish'}
-            </button>
+            <label class="toggle-control-wrap" style="min-height: 32px;">
+              <span class="toggle-switch">
+                <input type="checkbox" ${rel.isPublished ? 'checked' : ''} onchange="toggleReleasePublish('${rel.id}')">
+                <span class="toggle-slider"></span>
+              </span>
+              <span class="toggle-label-text">${rel.isPublished ? 'Public' : 'Draft'}</span>
+            </label>
           </div>
         </div>
         <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-8); white-space: pre-line; line-height: 1.45;">${rel.notes}</p>
@@ -490,8 +557,8 @@
   window.toggleReleasePublish = async function (id) {
     try {
       const updated = await window.FlipBackend.toggleReleasePublished(id);
-      showAlert(`Release status updated to ${updated.isPublished ? 'Published' : 'Draft'}.`, 'success');
-      renderAdminReleases();
+      showAlert(`Release status updated to ${updated.isPublished ? 'Published (Live)' : 'Draft (Hidden)'}.`, 'success');
+      await loadAllData();
     } catch (err) {
       showAlert(err.message);
     }

@@ -372,19 +372,78 @@
     }
 
     // ========================================================
+    // CLOUDFLARE R2 REALTIME STATE SYNC (/api/state)
+    // ========================================================
+    async fetchRemoteState() {
+      if (typeof fetch === 'undefined') return null;
+      const endpoints = ['/api/state', 'https://flip-admin.pages.dev/api/state'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.initialized) {
+              if (Array.isArray(data.releases) && typeof localStorage !== 'undefined') {
+                localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(data.releases));
+              }
+              if (Array.isArray(data.mediaItems) && typeof localStorage !== 'undefined') {
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(data.mediaItems));
+              }
+              return data;
+            } else if (data && data.initialized === false) {
+              const rels = (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY_RELEASES))
+                ? JSON.parse(localStorage.getItem(STORAGE_KEY_RELEASES))
+                : DEFAULT_RELEASES;
+              const items = (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY_ITEMS))
+                ? JSON.parse(localStorage.getItem(STORAGE_KEY_ITEMS))
+                : DEFAULT_MEDIA;
+              await this.pushRemoteState(rels, items);
+              return { initialized: true, releases: rels, mediaItems: items };
+            }
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
+    async pushRemoteState(releases, mediaItems) {
+      if (typeof fetch === 'undefined') return false;
+      const payload = {};
+      if (releases !== undefined) payload.releases = releases;
+      if (mediaItems !== undefined) payload.mediaItems = mediaItems;
+
+      const endpoints = ['/api/state', 'https://flip-admin.pages.dev/api/state'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) return true;
+        } catch (_) {}
+      }
+      return false;
+    }
+
+    // ========================================================
     // RELEASES DATA (Public reads published only)
     // ========================================================
     async getReleases(options = {}) {
-      const { publicOnly = true } = options;
+      const { publicOnly = true, skipRemote = false } = options;
+
+      if (!skipRemote) {
+        await this.fetchRemoteState();
+      }
 
       if (this.supabase) {
         let query = this.supabase.from('releases').select('*').order('order_index', { ascending: true });
         if (publicOnly) query = query.eq('is_published', true);
         const { data, error } = await query;
-        if (!error && data) return data;
+        if (!error && data && data.length > 0) return data;
       }
 
-      const raw = localStorage.getItem(STORAGE_KEY_RELEASES);
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_RELEASES) : null;
       const items = raw ? JSON.parse(raw) : DEFAULT_RELEASES;
       
       const filtered = publicOnly ? items.filter(r => r.isPublished) : items;
@@ -392,7 +451,7 @@
     }
 
     async saveRelease(release) {
-      const items = await this.getReleases({ publicOnly: false });
+      const items = await this.getReleases({ publicOnly: false, skipRemote: true });
       const index = items.findIndex(r => r.id === release.id);
 
       if (index >= 0) {
@@ -404,7 +463,10 @@
         items.push(release);
       }
 
-      localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(items));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(items));
+      }
+      await this.pushRemoteState(items, undefined);
       this.broadcastChange('releases');
       return release;
     }
@@ -413,18 +475,22 @@
     // MEDIA & TUTORIALS ITEMS (Public reads published only)
     // ========================================================
     async getMediaItems(options = {}) {
-      const { publicOnly = true, category = 'all' } = options;
+      const { publicOnly = true, category = 'all', skipRemote = false } = options;
+
+      if (!skipRemote) {
+        await this.fetchRemoteState();
+      }
 
       if (this.supabase) {
         let query = this.supabase.from('media_items').select('*').order('order_index', { ascending: true });
         if (publicOnly) query = query.eq('is_published', true);
         if (category !== 'all') query = query.eq('category', category);
         const { data, error } = await query;
-        if (!error && data) return data;
+        if (!error && data && data.length > 0) return data;
       }
 
-      const raw = localStorage.getItem(STORAGE_KEY_ITEMS);
-      const items = raw ? JSON.parse(raw) : [];
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_ITEMS) : null;
+      const items = raw ? JSON.parse(raw) : DEFAULT_MEDIA;
 
       let result = publicOnly ? items.filter(m => m.isPublished) : items;
       if (category !== 'all') {
@@ -435,7 +501,7 @@
     }
 
     async saveMediaItem(item) {
-      const items = await this.getMediaItems({ publicOnly: false });
+      const items = await this.getMediaItems({ publicOnly: false, skipRemote: true });
       const index = items.findIndex(m => m.id === item.id);
 
       if (index >= 0) {
@@ -449,23 +515,29 @@
         items.push(item);
       }
 
-      localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+      }
+      await this.pushRemoteState(undefined, items);
       this.broadcastChange('media');
       return item;
     }
 
     async deleteMediaItem(id) {
-      let items = await this.getMediaItems({ publicOnly: false });
+      let items = await this.getMediaItems({ publicOnly: false, skipRemote: true });
       items = items.filter(m => m.id !== id);
       // Re-normalize order indexes
       items.forEach((m, idx) => m.orderIndex = idx);
-      localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+      }
+      await this.pushRemoteState(undefined, items);
       this.broadcastChange('media');
       return true;
     }
 
     async reorderMediaItems(orderedIds) {
-      const items = await this.getMediaItems({ publicOnly: false });
+      const items = await this.getMediaItems({ publicOnly: false, skipRemote: true });
       const idMap = new Map(items.map(m => [m.id, m]));
       const reordered = [];
 
@@ -484,18 +556,24 @@
         reordered.push(item);
       }
 
-      localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(reordered));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(reordered));
+      }
+      await this.pushRemoteState(undefined, reordered);
       this.broadcastChange('media');
       return reordered;
     }
 
     async togglePublished(id) {
-      const items = await this.getMediaItems({ publicOnly: false });
+      const items = await this.getMediaItems({ publicOnly: false, skipRemote: true });
       const item = items.find(m => m.id === id);
       if (item) {
         item.isPublished = !item.isPublished;
         item.updatedAt = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+        }
+        await this.pushRemoteState(undefined, items);
         this.broadcastChange('media');
         return item;
       }
@@ -503,12 +581,15 @@
     }
 
     async toggleReleasePublished(id) {
-      const items = await this.getReleases({ publicOnly: false });
+      const items = await this.getReleases({ publicOnly: false, skipRemote: true });
       const item = items.find(r => r.id === id);
       if (item) {
         item.isPublished = !item.isPublished;
         item.updatedAt = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(items));
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY_RELEASES, JSON.stringify(items));
+        }
+        await this.pushRemoteState(items, undefined);
         this.broadcastChange('releases');
         return item;
       }

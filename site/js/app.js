@@ -113,12 +113,31 @@
 
   async function renderMediaItems() {
     const container = document.getElementById('media-showcase-container');
+    const whatsNewSection = document.getElementById('whats-new');
+    const whatsNewContainer = document.getElementById('whats-new-container');
     if (!container || !window.FlipBackend) return;
 
     try {
       const items = await window.FlipBackend.getMediaItems({ publicOnly: true });
+      const whatsNewItems = (items || []).filter(m => m.category === 'releases' || m.id === 'media_whatsnew_v101');
+      const mediaItems = (items || []).filter(m => m.category !== 'releases' && m.id !== 'media_whatsnew_v101');
 
-      if (!items || items.length === 0) {
+      if (whatsNewSection && whatsNewContainer) {
+        if (whatsNewItems.length > 0) {
+          whatsNewSection.style.display = 'block';
+          whatsNewContainer.innerHTML = whatsNewItems.map(item => `
+            <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-strong); border-radius: var(--border-radius); padding: var(--space-24); margin-bottom: var(--space-16);">
+              <h2 class="section-title" style="margin-bottom: var(--space-16);">${item.title}</h2>
+              <div class="media-desc" style="font-size: 15px; line-height: 1.6; white-space: pre-line;">${item.description || ''}</div>
+            </div>
+          `).join('');
+        } else {
+          whatsNewSection.style.display = 'none';
+          whatsNewContainer.innerHTML = '';
+        }
+      }
+
+      if (mediaItems.length === 0) {
         container.innerHTML = `
           <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius); padding: var(--space-32); text-align: center; grid-column: 1 / -1;">
             <p style="font-size: 15px; color: var(--color-text-primary); font-weight: 600; margin-bottom: var(--space-8);">No Guides or Media Published Yet</p>
@@ -130,7 +149,7 @@
         return;
       }
 
-      container.innerHTML = items.map(item => {
+      container.innerHTML = mediaItems.map(item => {
         const isVideo = item.type === 'video' || (item.url && (item.url.endsWith('.mp4') || item.url.endsWith('.webm')));
         return `
           <article class="media-item">

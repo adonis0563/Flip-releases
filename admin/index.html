@@ -140,10 +140,13 @@
         </div>
       </div>
 
+      <!-- Staged v1.0.1 What's New & Release Master Toggle -->
+      <div id="staged-release-control-container"></div>
+
       <!-- Navigation Tabs -->
       <div class="tabs-bar" role="tablist">
         <button class="tab-btn active" onclick="switchTab('tab-upload')" role="tab">Upload Item</button>
-        <button class="tab-btn" onclick="switchTab('tab-items')" role="tab">Published Items (<span id="count-items">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('tab-items')" role="tab">What's New & Items (<span id="count-items">0</span>)</button>
         <button class="tab-btn" onclick="switchTab('tab-releases')" role="tab">Releases</button>
         <button class="tab-btn" onclick="switchTab('tab-settings')" role="tab">Backend Settings</button>
       </div>
@@ -196,10 +199,13 @@
               </select>
             </div>
 
-            <div class="form-group" style="display: flex; align-items: center; gap: var(--space-8); min-height: var(--min-touch-size);">
-              <input type="checkbox" id="item-published" checked style="width: 20px; height: 20px;">
-              <label for="item-published" style="font-size: 15px; font-weight: 600; cursor: pointer;">
-                Publish immediately to public website
+            <div class="form-group">
+              <label for="item-published" class="toggle-control-wrap">
+                <span class="toggle-switch">
+                  <input type="checkbox" id="item-published" checked>
+                  <span class="toggle-slider"></span>
+                </span>
+                <span class="toggle-label-text">Publish immediately to public website (uncheck to save as Draft)</span>
               </label>
             </div>
 
