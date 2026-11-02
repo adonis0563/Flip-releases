@@ -13,7 +13,18 @@
     "publish:dry-run": "node scripts/r2-publisher.js --dry-run",
     "preview": "node scripts/preview-server.js"
   },
-  "keywords": ["flip", "release-management", "cloudflare-pages", "r2", "offline-sharing"],
+  "keywords": [
+    "flip",
+    "release-management",
+    "cloudflare-pages",
+    "r2",
+    "offline-sharing"
+  ],
   "author": "Adinoyi Raji",
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@cloudflare/workerd-windows-64": "^1.20261102.1",
+    "@esbuild/win32-x64": "^0.28.2",
+    "wrangler": "^4.156.2"
+  }
 }
